@@ -1,0 +1,163 @@
+# Path to the SVD template file
+_svd: svdtemplate.svd
+
+# Include other YAML files if needed.
+# Path is relative to this file location.
+#_include:
+#  - "xyz.yaml"
+
+_modify:
+  vendor: 1BitSquared
+  name: iCETwang-SOC
+  version: 0.1
+  description: iCETwang 1D Dungeon SOC
+  addressUnitBits: 8
+  width: 32
+  access: read-write
+  size: 0x20
+  resetValue: 0x0
+  resetMask: 0xFFFFFFFF
+
+# Start adding peripherals
+# UART     0x81000000
+# SPI      0x82000000
+# LED      0x83000000
+# USB_CORE 0x84000000
+# USB_DATA 0x85000000
+# KEYSCAN  0x86000000 (icekeeb)
+_add:
+  LED_Common:
+    description: LED control
+    groupName: LED
+    baseAddress: 0x83000000
+    addressBlock:
+      offset: 0x0
+      size:   0x01000000
+      usage: registers
+    registers:
+      CSR:
+        description: Control and Status Register
+        addressOffset: 0x0
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          LEDDEXE:
+            description: Enable the IP to run the blinking sequence. When low, the sequence stops at the nearest OFF state
+            bitOffset: 1
+            bitWidth: 1
+          RGBLEDEN:
+            description: Enable control of the RGB LED
+            bitOffset: 2
+            bitWidth: 1
+          CURREN:
+            description: Power up
+            bitOffset: 3
+            bitWidth: 1
+      PWRR:
+        description: Pulse Width Register Red
+        addressOffset: 0x44
+        access: read-write
+        resetValue: 0x00000000
+      PWRG:
+        description: Pulse Width Register Green
+        addressOffset: 0x48
+        access: read-write
+        resetValue: 0x00000000
+      PWRB:
+        description: Pulse Width Register Green
+        addressOffset: 0x4C
+        access: read-write
+        resetValue: 0x00000000
+      BCRR:
+        description: Breathe Control Rise Register
+        addressOffset: 0x54
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          BRATE:
+            description: Breathe ON Rate
+            bitOffset: 0
+            bitWidth: 4
+          BMODE:
+            description: Breathe Mode Select 0= Breathe with local rate, 1= Modulate rate based on color setting
+            bitOffset: 5
+            bitWidth: 1
+          BEDGE:
+            description: Breathe Edge 0= Breathe control only for ON ramp, 1= Breathe control for ON and OFF ramp
+            bitOffset: 6
+            bitWidth: 1
+          BON:
+            description: Breathe ON Enable
+            bitOffset: 7
+            bitWidth: 1
+      BCFR:
+        description: Breathe Control Fall Register
+        addressOffset: 0x58
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          BRATE:
+            description: Breathe OFF Rate
+            bitOffset: 0
+            bitWidth: 4
+          BMODE:
+            description: Breathe Mode Select 0= Breathe with local rate, 1= Modulate rate based on color setting
+            bitOffset: 5
+            bitWidth: 1
+          BRANGE:
+            description: Breathe Range extend for linear mode
+            bitOffset: 6
+            bitWidth: 1
+          BON:
+            description: Breathe OFF Enable
+            bitOffset: 7
+            bitWidth: 1
+      CR0:
+        description: Control Register 0
+        addressOffset: 0x60
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          BRMSBEXT:
+            description: Pre-scale register MSB extension
+            bitOffset: 0
+            bitWidth: 2
+          PWM_MODE:
+            description: 0= Linear, 1= LFSR
+            bitOffset: 2
+            bitWidth: 1
+          QUICK_STOP:
+            description: 0= Stop the blinking sequence wheen current ON period finishes, 1= Stop blinking immediately
+            bitOffset: 3
+            bitWidth: 1
+          OUTSKEW:
+            description: Enable PWM slew to reduce simultaneous switching noise, based on BRMSBEXT
+            bitOffset: 4
+            bitWidth: 1
+          OUTPOL:
+            description: PWM output polarity. 0= Active high, 1= Active low
+            bitOffset: 5
+            bitWidth: 1
+          FR250:
+            description: PWM flick rate. 0= 125Hz, 1= 250Hz
+            bitOffset: 6
+            bitWidth: 1
+          LEDDEN:
+            description: LED Driver Enable
+            bitOffset: 7
+            bitWidth: 1
+      BR:
+        description: Pre-scale Register
+        addressOffset: 0x64
+        access: read-write
+        resetValue: 0x00000000
+      ONR:
+        description: ON Time Register
+        addressOffset: 0x68
+        access: read-write
+        resetValue: 0x00000000
+      OFR:
+        description: OFF Time Register
+        addressOffset: 0x6C
+        access: read-write
+        resetValue: 0x00000000

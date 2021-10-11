@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD.xsd" >
+    <vendor></vendor>
+    <name></name>
+
+    <addressUnitBits></addressUnitBits>
+    <width></width>
+    <size></size>
+    <access></access>
+    <resetValue></resetValue>
+    <resetMask></resetMask>
+
+    <peripherals>
+    </peripherals>
+</device>

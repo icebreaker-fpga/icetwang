@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<device xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="1.1" xs:noNamespaceSchemaLocation="CMSIS-SVD.xsd">
+  <vendor>1BitSquared</vendor>
+  <name>iCETwang-SOC</name>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <size>32</size>
+  <access>read-write</access>
+  <resetValue>0</resetValue>
+  <resetMask>4294967295</resetMask>
+  <peripherals>
+    <peripheral>
+      <name>LED_Common</name>
+      <description>LED control</description>
+      <groupName>LED</groupName>
+      <baseAddress>2197815296</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>16777216</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>CSR</name>
+          <description>Control and Status Register</description>
+          <addressOffset>0</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>LEDDEXE</name>
+              <description>Enable the IP to run the blinking sequence. When low, the sequence stops at the nearest OFF state</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>RGBLEDEN</name>
+              <description>Enable control of the RGB LED</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>CURREN</name>
+              <description>Power up</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>PWRR</name>
+          <description>Pulse Width Register Red</description>
+          <addressOffset>68</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>PWRG</name>
+          <description>Pulse Width Register Green</description>
+          <addressOffset>72</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>PWRB</name>
+          <description>Pulse Width Register Green</description>
+          <addressOffset>76</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>BCRR</name>
+          <description>Breathe Control Rise Register</description>
+          <addressOffset>84</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>BRATE</name>
+              <description>Breathe ON Rate</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>4</bitWidth>
+            </field>
+            <field>
+              <name>BMODE</name>
+              <description>Breathe Mode Select 0= Breathe with local rate, 1= Modulate rate based on color setting</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>BEDGE</name>
+              <description>Breathe Edge 0= Breathe control only for ON ramp, 1= Breathe control for ON and OFF ramp</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>BON</name>
+              <description>Breathe ON Enable</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>BCFR</name>
+          <description>Breathe Control Fall Register</description>
+          <addressOffset>88</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>BRATE</name>
+              <description>Breathe OFF Rate</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>4</bitWidth>
+            </field>
+            <field>
+              <name>BMODE</name>
+              <description>Breathe Mode Select 0= Breathe with local rate, 1= Modulate rate based on color setting</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>BRANGE</name>
+              <description>Breathe Range extend for linear mode</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>BON</name>
+              <description>Breathe OFF Enable</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>CR0</name>
+          <description>Control Register 0</description>
+          <addressOffset>96</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>BRMSBEXT</name>
+              <description>Pre-scale register MSB extension</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>2</bitWidth>
+            </field>
+            <field>
+              <name>PWM_MODE</name>
+              <description>0= Linear, 1= LFSR</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>QUICK_STOP</name>
+              <description>0= Stop the blinking sequence wheen current ON period finishes, 1= Stop blinking immediately</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>OUTSKEW</name>
+              <description>Enable PWM slew to reduce simultaneous switching noise, based on BRMSBEXT</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>OUTPOL</name>
+              <description>PWM output polarity. 0= Active high, 1= Active low</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>FR250</name>
+              <description>PWM flick rate. 0= 125Hz, 1= 250Hz</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>LEDDEN</name>
+              <description>LED Driver Enable</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>BR</name>
+          <description>Pre-scale Register</description>
+          <addressOffset>100</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>ONR</name>
+          <description>ON Time Register</description>
+          <addressOffset>104</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>OFR</name>
+          <description>OFF Time Register</description>
+          <addressOffset>108</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+      </registers>
+    </peripheral>
+  </peripherals>
+</device>

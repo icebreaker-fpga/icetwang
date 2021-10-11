@@ -1,3 +1,15 @@
 [submodule "hardware/lib/pkl"]
 	path = hardware/lib/pkl
 	url = https://github.com/esden/pretty-kicad-libs.git
+[submodule "soc/build"]
+	path = soc/build
+	url = https://github.com/no2fpga/no2build.git
+[submodule "soc/cores/no2usb"]
+	path = soc/cores/no2usb
+	url = https://github.com/no2fpga/no2usb.git
+[submodule "soc/cores/no2ice40"]
+	path = soc/cores/no2ice40
+	url = https://github.com/no2fpga/no2ice40.git
+[submodule "soc/cores/no2misc"]
+	path = soc/cores/no2misc
+	url = https://github.com/no2fpga/no2misc.git
