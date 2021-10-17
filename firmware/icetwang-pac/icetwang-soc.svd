@@ -10,6 +10,79 @@
   <resetMask>4294967295</resetMask>
   <peripherals>
     <peripheral>
+      <name>UART</name>
+      <description>UART interface</description>
+      <groupName>UART</groupName>
+      <baseAddress>2164260864</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>16777216</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>DATA</name>
+          <description>UART data in/out register. HSB 0 indicates pending data.</description>
+          <addressOffset>0</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>DATABYTE</name>
+              <description>The actual data input and output.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+            </field>
+            <field>
+              <name>RFEMPTY</name>
+              <description>Receive FIFO empty flag</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>CSR</name>
+          <description>UART Config and Status Register</description>
+          <addressOffset>4</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>DIV</name>
+              <description>Baud rate clock divider</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>12</bitWidth>
+            </field>
+            <field>
+              <name>TFFULL</name>
+              <description>Transmit FIFO full flag</description>
+              <bitOffset>28</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>TFEMPTY</name>
+              <description>Transmit FIFO empty flag</description>
+              <bitOffset>29</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>RFOVERFLOW</name>
+              <description>Receive FIFO overflow flag</description>
+              <bitOffset>30</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>RFEMPTY</name>
+              <description>Receive FIFO empty flag</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
       <name>LED_Common</name>
       <description>LED control</description>
       <groupName>LED</groupName>
@@ -63,7 +136,7 @@
         </register>
         <register>
           <name>PWRB</name>
-          <description>Pulse Width Register Green</description>
+          <description>Pulse Width Register Blue</description>
           <addressOffset>76</addressOffset>
           <access>read-write</access>
           <resetValue>0</resetValue>

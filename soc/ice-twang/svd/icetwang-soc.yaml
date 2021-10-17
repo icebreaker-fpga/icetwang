@@ -26,6 +26,55 @@ _modify:
 # USB_DATA 0x85000000
 # KEYSCAN  0x86000000 (icekeeb)
 _add:
+  UART:
+    description: UART interface
+    groupName: UART
+    baseAddress: 0x81000000
+    addressBlock:
+      offset: 0x0
+      size:   0x01000000
+      usage: registers
+    registers:
+      DATA:
+        description: UART data in/out register. HSB 0 indicates pending data.
+        addressOffset: 0x0
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          DATABYTE:
+            description: The actual data input and output.
+            bitOffset: 0
+            bitWidth: 8
+          RFEMPTY:
+            description: Receive FIFO empty flag
+            bitOffset: 31
+            bitWidth: 1
+      CSR:
+        description: UART Config and Status Register
+        addressOffset: 0x4
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          DIV:
+            description: Baud rate clock divider
+            bitOffset: 0
+            bitWidth: 12
+          TFFULL:
+            description: Transmit FIFO full flag
+            bitOffset: 28
+            bitWidth: 1
+          TFEMPTY:
+            description: Transmit FIFO empty flag
+            bitOffset: 29
+            bitWidth: 1
+          RFOVERFLOW:
+            description: Receive FIFO overflow flag
+            bitOffset: 30
+            bitWidth: 1
+          RFEMPTY:
+            description: Receive FIFO empty flag
+            bitOffset: 31
+            bitWidth: 1
   LED_Common:
     description: LED control
     groupName: LED
@@ -64,7 +113,7 @@ _add:
         access: read-write
         resetValue: 0x00000000
       PWRB:
-        description: Pulse Width Register Green
+        description: Pulse Width Register Blue
         addressOffset: 0x4C
         access: read-write
         resetValue: 0x00000000

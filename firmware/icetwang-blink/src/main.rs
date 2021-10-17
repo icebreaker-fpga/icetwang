@@ -3,12 +3,12 @@
 
 extern crate panic_halt;
 
-use icetwang_pac;
+use icetwang_pac::{self, Peripherals};
 use riscv_rt::entry;
 
 //mod timer;
 mod leds;
-//mod print;
+mod print;
 
 //use timer::Timer;
 use leds::Leds;
@@ -18,11 +18,11 @@ use leds::Leds;
 // This is the entry point for the application.
 // It is not allowed to return.
 
-#[entry]
-fn main() -> ! {
+fn real_main() -> ! {
     let peripherals = icetwang_pac::Peripherals::take().unwrap();
 
-    //print::print_hardware::set_hardware(peripherals.UART);
+    print::print_hardware::set_hardware(peripherals.UART);
+    print::print_hardware::set_divider(22); // Set baud to 1MBaud
     //let mut timer = Timer::new(peripherals.TIMER0);
     let mut leds = Leds::new(peripherals.LED_COMMON);
     leds.color(96, 10, 5);
@@ -31,10 +31,15 @@ fn main() -> ! {
     leds.state(true);
 
     loop {
-        //print!("a");
+        print!("a");
         //leds.toggle();
         //msleep(&mut timer, 160);
     }
+}
+
+#[entry]
+fn main() -> ! {
+    real_main();
 }
 
 /*fn msleep(timer: &mut Timer, ms: u32) {
