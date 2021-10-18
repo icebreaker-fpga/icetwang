@@ -26,3 +26,6 @@ set_io -nowarn rgb[1] 40
 set_io -nowarn rgb[2] 41
 set_io -nowarn led    25 # P13
 
+# LED String
+set_io -nowarn ls_clk  45
+set_io -nowarn ls_data  4

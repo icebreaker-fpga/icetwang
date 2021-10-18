@@ -36,6 +36,10 @@ module top (
 	output wire [2:0] rgb,
 	output wire led,
 
+	// LED String
+	output wire ls_clk,
+	output wire ls_data,
+
 	// Clock
 	input  wire clk_in
 );
@@ -193,6 +197,16 @@ module top (
 	assign wb_rdata[5] = 0;
 
 	assign led = 1;
+
+	// LED String
+	// ----------
+	ls_tst_runner ls1 (
+		.led_clk(ls_clk),
+		.led_data(ls_data),
+
+		.clk(clk_24m),
+		.rst(rst)
+	);
 
 	// Warm Boot
 	// ---------
