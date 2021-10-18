@@ -3,7 +3,7 @@
 
 extern crate panic_halt;
 
-use icetwang_pac::{self, Peripherals};
+use icetwang_pac;
 use riscv_rt::entry;
 
 //mod timer;
