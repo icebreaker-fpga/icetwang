@@ -12,6 +12,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	soc_spram.v \
 	soc_usb.v \
 	sysmgr.v \
+	ledstring.v \
 )
 PROJ_SIM_SRCS := $(addprefix sim/, \
 	spiflash.v \
@@ -19,7 +20,8 @@ PROJ_SIM_SRCS := $(addprefix sim/, \
 PROJ_SIM_SRCS += rtl/top.v
 PROJ_TESTBENCHES := \
 	dfu_helper_tb \
-	top_tb
+	top_tb \
+	ledstring_tb
 PROJ_PREREQ = \
 	$(BUILD_TMP)/boot.hex
 PROJ_TOP_SRC := rtl/top.v
