@@ -66,9 +66,7 @@ module ledstring (
     always @(posedge clk)
         ack <= go;
 
-`ifdef SIM
-    assign led_clk  = active & ~clk;
-`else
+
     SB_IO #(
         .PIN_TYPE(6'b0100_00)
     ) led_clk_pin (
@@ -77,12 +75,13 @@ module ledstring (
         .D_OUT_0(1'b0),
         .D_OUT_1(active)
     );
-`endif
+
     assign led_data = shift[31];
 
 
 endmodule
 
+// A small test module to generate a static 16 led long data stream
 module ls_tst_runner (
     output wire led_clk,
     output wire led_data,
