@@ -1,12 +1,12 @@
-use icetwang_pac::LED_COMMON;
+use icetwang_pac::RGBLED;
 
-pub struct Leds {
-    registers: LED_COMMON,
+pub struct RGBLed {
+    registers: RGBLED,
 }
 
 #[allow(dead_code)]
-impl Leds {
-    pub fn new(registers: LED_COMMON) -> Self {
+impl RGBLed {
+    pub fn new(registers: RGBLED) -> Self {
         registers.pwrr.reset();
         registers.pwrg.reset();
         registers.pwrg.reset();

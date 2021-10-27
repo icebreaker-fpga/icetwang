@@ -83,9 +83,9 @@
       </registers>
     </peripheral>
     <peripheral>
-      <name>LED_Common</name>
-      <description>LED control</description>
-      <groupName>LED</groupName>
+      <name>RGBLED</name>
+      <description>RGBLED control</description>
+      <groupName>RGBLED</groupName>
       <baseAddress>2197815296</baseAddress>
       <addressBlock>
         <offset>0</offset>
@@ -278,6 +278,67 @@
           <addressOffset>108</addressOffset>
           <access>read-write</access>
           <resetValue>0</resetValue>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>LEDSTR</name>
+      <description>RGB LED string interface</description>
+      <groupName>LEDSTR</groupName>
+      <baseAddress>2248146944</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>16777216</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>CSR</name>
+          <description>Control and Status Register</description>
+          <addressOffset>0</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>DIV</name>
+              <description>Clock divider</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>16</bitWidth>
+            </field>
+            <field>
+              <name>LEN</name>
+              <description>LED String Length</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>9</bitWidth>
+            </field>
+            <field>
+              <name>BSY</name>
+              <description>Reads 0 when idle and 1 when transmitting LED data</description>
+              <bitOffset>30</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>STRT</name>
+              <description>Write 1 to start LED string data transmission</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>GLOB</name>
+          <description>Global LED string brightness</description>
+          <addressOffset>1</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>GLOB</name>
+              <description>Global LED string brightness</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>5</bitWidth>
+            </field>
+          </fields>
         </register>
       </registers>
     </peripheral>

@@ -4,14 +4,16 @@
 extern crate panic_halt;
 
 use icetwang_pac;
+use ledstr::LEDString;
 use riscv_rt::entry;
 
 //mod timer;
-mod leds;
+mod rgbled;
 mod print;
+mod ledstr;
 
 //use timer::Timer;
-use leds::Leds;
+use rgbled::RGBLed;
 
 //const SYSTEM_CLOCK_FREQUENCY: u32 = 21_000_000;
 
@@ -24,14 +26,23 @@ fn real_main() -> ! {
     print::print_hardware::set_hardware(peripherals.UART);
     print::print_hardware::set_divider(22); // Set baud to 1MBaud
     //let mut timer = Timer::new(peripherals.TIMER0);
-    let mut leds = Leds::new(peripherals.LED_COMMON);
-    leds.color(96, 10, 5);
-    leds.blink(true, 200, 1000);
-    leds.breathe(true, 100, 200);
-    leds.state(true);
+    let mut rgbled = RGBLed::new(peripherals.RGBLED);
+    rgbled.color(96, 10, 5);
+    rgbled.blink(true, 200, 1000);
+    rgbled.breathe(true, 100, 200);
+    rgbled.state(true);
+
+    let ledstring = LEDString::new(peripherals.LEDSTR);
+
+    let led0 = ledstring.read_rgb(0);
+    println!("r{:#04x} g{:#04x} b{:#04x}", led0.r, led0.g, led0.b);
+    ledstring.write_rgb(0, ledstr::LED::new(0xFF, 0xFF, 0xFF));
+
+    let led1 = ledstring.read_rgb(0);
+    println!("r{:#04x} g{:#04x} b{:#04x}", led1.r, led1.g, led1.b);
 
     loop {
-        print!("a");
+        //print!("a");
         //leds.toggle();
         //msleep(&mut timer, 160);
     }

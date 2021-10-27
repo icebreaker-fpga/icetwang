@@ -75,9 +75,9 @@ _add:
             description: Receive FIFO empty flag
             bitOffset: 31
             bitWidth: 1
-  LED_Common:
-    description: LED control
-    groupName: LED
+  RGBLED:
+    description: RGBLED control
+    groupName: RGBLED
     baseAddress: 0x83000000
     addressBlock:
       offset: 0x0
@@ -210,3 +210,44 @@ _add:
         addressOffset: 0x6C
         access: read-write
         resetValue: 0x00000000
+  LEDSTR:
+    description: RGB LED string interface
+    groupName: LEDSTR
+    baseAddress: 0x86000000
+    addressBlock:
+      offset: 0x0
+      size:   0x01000000
+      usage: registers
+    registers:
+      CSR:
+        description: Control and Status Register
+        addressOffset: 0x0
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          DIV:
+            description: Clock divider
+            bitOffset: 0
+            bitWidth: 16
+          LEN:
+            description: LED String Length
+            bitOffset: 16
+            bitWidth: 9
+          BSY:
+            description: Reads 0 when idle and 1 when transmitting LED data
+            bitOffset: 30
+            bitWidth: 1
+          STRT:
+            description: Write 1 to start LED string data transmission
+            bitOffset: 31
+            bitWidth: 1
+      GLOB:
+        description: Global LED string brightness
+        addressOffset: 0x1
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          GLOB:
+            description: Global LED string brightness
+            bitOffset: 0
+            bitWidth: 5
