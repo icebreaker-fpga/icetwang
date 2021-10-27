@@ -13,6 +13,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	soc_usb.v \
 	sysmgr.v \
 	ledstring.v \
+	ledstring_wb.v \
 )
 PROJ_SIM_SRCS := $(addprefix sim/, \
 	spiflash.v \

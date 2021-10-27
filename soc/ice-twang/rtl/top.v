@@ -45,7 +45,7 @@ module top (
 );
 
 	localparam integer SPRAM_AW = 14; /* 14 => 64k, 15 => 128k */
-	localparam integer WB_N  =  6;
+	localparam integer WB_N  =  7;
 
 	localparam integer WB_DW = 32;
 	localparam integer WB_AW = 16;
@@ -198,7 +198,7 @@ module top (
 
 	assign led = 1;
 
-	// LED String
+	// LED String Test
 	// ----------
 	ls_tst_runner ls1 (
 		.led_clk(ls_clk),
@@ -206,6 +206,23 @@ module top (
 
 		.clk(clk_24m),
 		.rst(rst)
+	);
+
+	// LED String
+	// ----------
+	ledstring_wb ledstring_I (
+		.led_clk  (ls_clk),
+		.led_data (ls_data),
+
+		.wb_addr  (wb_addr[9:0]),
+		.wb_rdata (wb_rdata[6]),
+		.wb_wdata (wb_wdata),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[6]),
+		.wb_ack   (wb_ack[6]),
+
+		.clk      (clk_24m),
+		.rst      (rst)
 	);
 
 	// Warm Boot
