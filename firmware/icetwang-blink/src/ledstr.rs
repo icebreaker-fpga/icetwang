@@ -62,4 +62,41 @@ impl LEDString {
                       ((led.b as u32) <<  0);
         self.write_led(index, rgb);
     }
+
+    pub fn set_glob(&mut self, glob: u16) {
+        self.registers.glob().write(|w| unsafe { w.bits(glob as u32)});
+    }
+
+
+    pub fn set_csr(&self, start: bool, len: u16, div: u16) {
+        self.registers.csr().write_with_zero(|w| unsafe {
+            w.div().bits(div);
+            w.len().bits(len);
+            if start {
+                w.strt().set_bit()
+            } else {
+                w.strt().clear_bit()
+            }
+        });
+    }
+
+    pub fn set_div(&mut self, div: u16) {
+        self.registers.csr().modify(|_, w| unsafe {
+            w.div().bits(div)
+        });
+    }
+
+    pub fn set_len(&mut self, len: u16) {
+        self.registers.csr().modify(|_, w| unsafe {
+            w.len().bits(len)
+        });
+    }
+
+    pub fn start(&self) {
+        self.registers.csr().modify(|_, w| w.strt().set_bit());
+    }
+
+    pub fn bsy_n(&self) -> bool {
+        self.registers.csr().read().bsy().bit_is_set()
+    }
 }

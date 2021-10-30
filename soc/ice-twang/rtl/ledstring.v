@@ -1,6 +1,6 @@
 /*
  * ledstring.v
- * 
+ *
  * Copyright (C) 2021 Piotr Esden-Tempski <piotr@esden.net>
  * SPDX-License-Identfier: CERN-OHL-P-2.0
  */

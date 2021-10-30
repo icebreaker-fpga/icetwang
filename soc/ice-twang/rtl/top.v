@@ -198,16 +198,6 @@ module top (
 
 	assign led = 1;
 
-	// LED String Test
-	// ----------
-	ls_tst_runner ls1 (
-		.led_clk(ls_clk),
-		.led_data(ls_data),
-
-		.clk(clk_24m),
-		.rst(rst)
-	);
-
 	// LED String
 	// ----------
 	ledstring_wb ledstring_I (

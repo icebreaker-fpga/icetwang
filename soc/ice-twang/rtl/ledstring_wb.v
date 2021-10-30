@@ -43,10 +43,10 @@ module ledstring_wb (
     //  len = LED string length 0..512
     //  strt = write 1 to start transfer of vram to led string
     //  bsy = reads 1 when transfer from vram to led string in progress
-    reg strt = 0;
-    reg bsy = 0;
-    reg [8:0] len = 0; // 0..512 LED string length
-    reg [15:0] div = 0; // Clock divider (Not implemented, fixed to 0)
+    reg strt = 1'b0;
+    reg bsy = 1'b0;
+    reg [8:0] len = 9'h000; // 0..512 LED string length
+    reg [15:0] div = 16'h0000; // Clock divider (Not implemented, fixed to 0)
     // GLOB
     //  [31:5] [4:0]
     //  res    glob
@@ -85,13 +85,15 @@ module ledstring_wb (
 
     always @(posedge clk) begin
         if (rst) begin
-            strt <= 0;
-            len <= 0;
-            div <= 0;
+            strt <= 1'b0;
+            len <= 9'b0;
+            div <= 16'b0;
         end else if (b_we_csr) begin
             strt <= wb_wdata[31];
             len  <= wb_wdata[24:16];
             div  <= wb_wdata[15:0];
+        end else if (bsy) begin
+            strt <= 1'b0;
         end
     end
 
@@ -117,11 +119,85 @@ module ledstring_wb (
             wb_rdata <= 32'h00000000;
         else
             casez (wb_addr)
-                10'b0z_zzzz_zzz0: wb_rdata <= {1'b0, bsy, 5'b00000, len, div};
+                10'b0z_zzzz_zzz0: wb_rdata <= {strt, bsy, 5'b00000, len, div};
                 10'b0z_zzzz_zzz1: wb_rdata <= {27'h0000000, glob};
-                10'b1z_zzzz_zzzz: wb_rdata <= ldat[wb_addr[8:0]];
+                //10'b1z_zzzz_zzzz: wb_rdata <= ldat[wb_addr[8:0]]; // Disabled for now
+                10'b1z_zzzz_zzzz: wb_rdata <= 32'h00000000;
                 default: wb_rdata <= 32'hxxxxxxxx;
             endcase
     end
+
+    // Signals
+    reg framing;
+    reg se_frame;
+    reg [8:0] led_ptr;
+    reg valid;
+    wire ack;
+
+    // State Machine
+    parameter IDLE=0, FS=1, DAT=2, FE=3;
+    reg [1:0] state;
+
+    always @(posedge clk)
+        if (rst) begin
+            state    <= IDLE;
+            framing  <= 1'b1;
+            se_frame <= 1'b0;
+            led_ptr  <= 9'h00;
+            valid    <= 1'b0;
+        end else case (state)
+            IDLE:
+                if (strt) begin       // Send Start Frame
+                    bsy <= 1'b1;      // Indicate busy
+                    framing <= 1'b1;  // framing mode (Start)
+                    se_frame <= 1'b0; // start frame
+                    led_ptr <= {1'b0, len}; // prime LED data pointer
+                    valid <= 1'b1;    // indicate that data is valid
+                    state <= FS;
+                end
+            FS:
+                if (ack) begin
+                    framing <= 1'b0;      // data mode
+                    state <= DAT;
+                end
+            DAT:
+                if (ack) begin
+                    led_ptr <= led_ptr - 1; // Decrement LED Pointer
+                    if (led_ptr == 9'h00) begin // Send End Frame
+                        framing <= 1'b1;  // framing mode
+                        se_frame <= 1'b1; // end frame
+                        state <= FE;
+                    end
+                end
+            FE:
+                if (ack) begin
+                    bsy   <= 1'b0;
+                    valid <= 1'b0;
+                    state <= IDLE; // we are done!
+                end
+        endcase
+
+    wire [7:0] dat_red;
+    wire [7:0] dat_grn;
+    wire [7:0] dat_blu;
+
+    assign {dat_red, dat_grn, dat_blu} = ldat[led_ptr];
+
+    ledstring ls1 (
+        .led_clk(led_clk),
+        .led_data(led_data),
+
+        .framing(framing),
+        .se_frame(se_frame),
+        .dat_glo(glob), // Full global brightness
+        .dat_red(dat_red),
+        .dat_grn(dat_grn),
+        .dat_blu(dat_blu),
+        .valid(valid),
+        .ack(ack),
+
+        .clk(clk),
+        .rst(rst)
+    );
 
 endmodule // ledstring_wb
