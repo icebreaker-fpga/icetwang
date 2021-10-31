@@ -83,7 +83,7 @@ module ledstring_tb;
     // ledstring dut_I (
     //     .led_clk(led_clk),
     //     .led_data(led_data),
-        
+
     //     .framing(framing),
     //     .se_frame(se_frame),
     //     .dat_glo(dat_glo),

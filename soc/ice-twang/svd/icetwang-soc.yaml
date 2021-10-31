@@ -243,11 +243,57 @@ _add:
             bitWidth: 1
       GLOB:
         description: Global LED string brightness
-        addressOffset: 0x1
+        addressOffset: 0x4
         access: read-write
-        resetValue: 0x00000000
+        resetValue: 0x0000001F
         fields:
           GLOB:
             description: Global LED string brightness
             bitOffset: 0
             bitWidth: 5
+  TIMER:
+    description: TIMER
+    groupName: TIMER
+    baseAddress: 0x87000000
+    addressBlock:
+      offset: 0x0
+      size:   0x01000000
+      usage: registers
+    registers:
+      CSR:
+        description: Control and Status Register
+        addressOffset: 0x0
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          EN:
+            description: Timer enable
+            bitOffset: 0
+            bitWidth: 1
+          ST:
+            description: Timer status, 1 while timer is != 0
+            bitOffset: 1
+            bitWidth: 1
+          EV:
+            description: Timer event, set to 1 when timer reaches 0 and EV_EN is set
+            bitOffset: 2
+            bitWidth: 1
+          EV_EN:
+            description: Timer event enable
+            bitOffset: 3
+            bitWidth: 1
+      LOAD:
+        description: Value loaded into the timer counter when EN goes high
+        addressOffset: 0x4
+        access: read-write
+        resetValue: 0x00000000
+      RELOAD:
+        description: Value loaded into the timer counter when timer reaches 0
+        addressOffset: 0x8
+        access: read-write
+        resetValue: 0x00000000
+      COUNTER:
+        description: Live timer counter value
+        addressOffset: 0xC
+        access: read-only
+        resetValue: 0x00000000

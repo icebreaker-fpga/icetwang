@@ -24,9 +24,9 @@ impl LEDString {
     //const VMEM: *const () = 0x86000200 as _;
 
     pub fn new(registers: LEDSTR) -> Self {
-        registers.csr().reset();
-        registers.glob().reset();
-        registers.csr().reset();
+        registers.csr.reset();
+        registers.glob.reset();
+        registers.csr.reset();
 
         let vmem_ptr = 0x86000800 as *mut VolatileCell<u32>;
 
@@ -64,12 +64,12 @@ impl LEDString {
     }
 
     pub fn set_glob(&mut self, glob: u16) {
-        self.registers.glob().write(|w| unsafe { w.bits(glob as u32)});
+        self.registers.glob.write(|w| unsafe { w.bits(glob as u32)});
     }
 
 
     pub fn set_csr(&self, start: bool, len: u16, div: u16) {
-        self.registers.csr().write_with_zero(|w| unsafe {
+        self.registers.csr.write_with_zero(|w| unsafe {
             w.div().bits(div);
             w.len().bits(len);
             if start {
@@ -81,22 +81,22 @@ impl LEDString {
     }
 
     pub fn set_div(&mut self, div: u16) {
-        self.registers.csr().modify(|_, w| unsafe {
+        self.registers.csr.modify(|_, w| unsafe {
             w.div().bits(div)
         });
     }
 
     pub fn set_len(&mut self, len: u16) {
-        self.registers.csr().modify(|_, w| unsafe {
+        self.registers.csr.modify(|_, w| unsafe {
             w.len().bits(len)
         });
     }
 
     pub fn start(&self) {
-        self.registers.csr().modify(|_, w| w.strt().set_bit());
+        self.registers.csr.modify(|_, w| w.strt().set_bit());
     }
 
     pub fn bsy_n(&self) -> bool {
-        self.registers.csr().read().bsy().bit_is_set()
+        self.registers.csr.read().bsy().bit_is_set()
     }
 }

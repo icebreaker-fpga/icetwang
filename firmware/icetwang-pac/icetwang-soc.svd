@@ -328,9 +328,9 @@
         <register>
           <name>GLOB</name>
           <description>Global LED string brightness</description>
-          <addressOffset>1</addressOffset>
+          <addressOffset>4</addressOffset>
           <access>read-write</access>
-          <resetValue>0</resetValue>
+          <resetValue>31</resetValue>
           <fields>
             <field>
               <name>GLOB</name>
@@ -339,6 +339,73 @@
               <bitWidth>5</bitWidth>
             </field>
           </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>TIMER</name>
+      <description>TIMER</description>
+      <groupName>TIMER</groupName>
+      <baseAddress>2264924160</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>16777216</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>CSR</name>
+          <description>Control and Status Register</description>
+          <addressOffset>0</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>EN</name>
+              <description>Timer enable</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>ST</name>
+              <description>Timer status, 1 while timer is != 0</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>EV</name>
+              <description>Timer event, set to 1 when timer reaches 0 and EV_EN is set</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>EV_EN</name>
+              <description>Timer event enable</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>LOAD</name>
+          <description>Value loaded into the timer counter when EN goes high</description>
+          <addressOffset>4</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>RELOAD</name>
+          <description>Value loaded into the timer counter when timer reaches 0</description>
+          <addressOffset>8</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+        </register>
+        <register>
+          <name>COUNTER</name>
+          <description>Live timer counter value</description>
+          <addressOffset>12</addressOffset>
+          <access>read-only</access>
+          <resetValue>0</resetValue>
         </register>
       </registers>
     </peripheral>

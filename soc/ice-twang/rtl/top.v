@@ -45,7 +45,7 @@ module top (
 );
 
 	localparam integer SPRAM_AW = 14; /* 14 => 64k, 15 => 128k */
-	localparam integer WB_N  =  7;
+	localparam integer WB_N  =  8;
 
 	localparam integer WB_DW = 32;
 	localparam integer WB_AW = 16;
@@ -210,6 +210,20 @@ module top (
 		.wb_we    (wb_we),
 		.wb_cyc   (wb_cyc[6]),
 		.wb_ack   (wb_ack[6]),
+
+		.clk      (clk_24m),
+		.rst      (rst)
+	);
+
+	// Timer
+	// -----
+	timer_wb timer_I (
+		.wb_addr  (wb_addr[1:0]),
+		.wb_rdata (wb_rdata[7]),
+		.wb_wdata (wb_wdata),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[7]),
+		.wb_ack   (wb_ack[7]),
 
 		.clk      (clk_24m),
 		.rst      (rst)
