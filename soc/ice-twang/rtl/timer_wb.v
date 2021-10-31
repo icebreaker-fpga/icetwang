@@ -7,7 +7,6 @@
 `default_nettype none
 
 module timer_wb (
-    // Bus interface
 
     // Bus interface
     input  wire [1:0] wb_addr,
@@ -108,7 +107,7 @@ module timer_wb (
             wb_rdata <= 32'h00000000;
         else
             casez (wb_addr)
-                2'b00: wb_rdata <= {24'h000000, ev_en, ev, st, en};
+                2'b00: wb_rdata <= {28'h000000, ev_en, ev, st, en};
                 2'b01: wb_rdata <= load;
                 2'b10: wb_rdata <= reload;
                 2'b11: wb_rdata <= counter;
