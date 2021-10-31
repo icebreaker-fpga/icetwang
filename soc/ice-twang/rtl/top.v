@@ -40,12 +40,18 @@ module top (
 	output wire ls_clk,
 	output wire ls_data,
 
+	// Arcade Joystick
+	input  wire joy_up,
+	input  wire joy_down,
+	input  wire joy_left,
+	input  wire joy_right,
+
 	// Clock
 	input  wire clk_in
 );
 
 	localparam integer SPRAM_AW = 14; /* 14 => 64k, 15 => 128k */
-	localparam integer WB_N  =  8;
+	localparam integer WB_N  =  9;
 
 	localparam integer WB_DW = 32;
 	localparam integer WB_AW = 16;
@@ -224,6 +230,25 @@ module top (
 		.wb_we    (wb_we),
 		.wb_cyc   (wb_cyc[7]),
 		.wb_ack   (wb_ack[7]),
+
+		.clk      (clk_24m),
+		.rst      (rst)
+	);
+
+	// Arcade Joystick
+	// ---------------
+	joy_wb joy_I (
+		.joy_up(joy_up),
+		.joy_down(joy_down),
+		.joy_left(joy_left),
+		.joy_right(joy_right),
+
+		//.wb_addr  (wb_addr[0]), // always button outputs
+		.wb_rdata (wb_rdata[8]),
+		//.wb_wdata (wb_wdata), // nothing to write
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[8]),
+		.wb_ack   (wb_ack[8]),
 
 		.clk      (clk_24m),
 		.rst      (rst)

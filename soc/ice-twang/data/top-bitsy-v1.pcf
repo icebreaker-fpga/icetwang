@@ -29,3 +29,9 @@ set_io -nowarn led    25 # P13
 # LED String
 set_io -nowarn ls_clk  45
 set_io -nowarn ls_data  4
+
+# Arcade Joystick
+set_io -nowarn joy_up    3  # P5
+set_io -nowarn joy_down  9  # P6
+set_io -nowarn joy_left  10 # P7
+set_io -nowarn joy_right 11 # P8

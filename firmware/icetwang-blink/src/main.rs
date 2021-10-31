@@ -11,9 +11,11 @@ mod timer;
 mod rgbled;
 mod print;
 mod ledstr;
+mod joy;
 
 use timer::Timer;
 use rgbled::RGBLed;
+use joy::Joy;
 
 //const SYSTEM_CLOCK_FREQUENCY: u32 = 21_000_000;
 
@@ -52,13 +54,19 @@ fn real_main() -> ! {
     // Output the inital LED string state
     ledstring.start();
 
+    // Configure the Joystick
+    let mut joy = Joy::new(peripherals.JOY);
+
     // Start timer
     timer.enable();
 
     // let mut div: u32 = 0x00;
     let mut val: u8 = 0xFF;
     loop {
-        print!("a");
+        let joystate = joy.get();
+        println!("{:?}", joystate);
+
+        // Make sure the LED string is ready for us
         while ledstring.bsy_n() {
             print!("b");
         }

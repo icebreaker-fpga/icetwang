@@ -409,5 +409,51 @@
         </register>
       </registers>
     </peripheral>
+    <peripheral>
+      <name>JOY</name>
+      <description>JOY</description>
+      <groupName>JOY</groupName>
+      <baseAddress>2281701376</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>16777216</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>JOY</name>
+          <description>Joystick button state</description>
+          <addressOffset>0</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>UP</name>
+              <description>Joystick Up</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>DOWN</name>
+              <description>Joystick Down</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>LEFT</name>
+              <description>Joystick Left</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>RIGHT</name>
+              <description>Joystick Right</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
   </peripherals>
 </device>

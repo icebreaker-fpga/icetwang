@@ -297,3 +297,34 @@ _add:
         addressOffset: 0xC
         access: read-only
         resetValue: 0x00000000
+  JOY:
+    description: JOY
+    groupName: JOY
+    baseAddress: 0x88000000
+    addressBlock:
+      offset: 0x0
+      size:   0x01000000
+      usage: registers
+    registers:
+      JOY:
+        description: Joystick button state
+        addressOffset: 0x0
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          UP:
+            description: Joystick Up
+            bitOffset: 0
+            bitWidth: 1
+          DOWN:
+            description: Joystick Down
+            bitOffset: 1
+            bitWidth: 1
+          LEFT:
+            description: Joystick Left
+            bitOffset: 2
+            bitWidth: 1
+          RIGHT:
+            description: Joystick Right
+            bitOffset: 3
+            bitWidth: 1
