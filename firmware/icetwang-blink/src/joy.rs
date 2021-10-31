@@ -2,10 +2,10 @@ use icetwang_pac::JOY;
 
 #[derive(Debug)]
 pub struct JoyState {
-    up: bool,
-    down: bool,
-    left: bool,
-    right: bool
+    pub up: bool,
+    pub down: bool,
+    pub left: bool,
+    pub right: bool
 }
 
 pub struct Joy {
@@ -23,7 +23,7 @@ impl Joy {
         let up    = (state & 0x01) != 0;
         let down  = (state & 0x02) != 0;
         let left  = (state & 0x04) != 0;
-        let right = (state & 0x0C) != 0;
+        let right = (state & 0x08) != 0;
         JoyState { up, down, left, right }
     }
 }

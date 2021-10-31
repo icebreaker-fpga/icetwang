@@ -31,8 +31,9 @@ fn real_main() -> ! {
 
     // Configure the timer
     let mut timer = Timer::new(peripherals.TIMER);
-    timer.load(16666); // We want the timer ev to trigger every 1/60th of a second
-    timer.reload(16666);
+    let event_time = 16666;
+    timer.load(event_time); // We want the timer ev to trigger every 1/60th of a second
+    timer.reload(event_time);
     timer.enable_ev();
 
     // Configure the RGBLed
@@ -57,14 +58,20 @@ fn real_main() -> ! {
     // Configure the Joystick
     let mut joy = Joy::new(peripherals.JOY);
 
+    // Print header
+    println!("\nDir  CPU  us");
+
     // Start timer
     timer.enable();
 
-    // let mut div: u32 = 0x00;
     let mut val: u8 = 0xFF;
     loop {
         let joystate = joy.get();
-        println!("{:?}", joystate);
+        print!("{}{}{}{}",
+            if joystate.left {"<"} else {" "},
+            if joystate.right {">"} else {" "},
+            if joystate.up {"^"} else {" "},
+            if joystate.down {"v"} else {" "});
 
         // Make sure the LED string is ready for us
         while ledstring.bsy_n() {
@@ -77,6 +84,9 @@ fn real_main() -> ! {
         ledstring.write_rgb(2, ledstr::LED::new(0x00, 0x00, val));
         ledstring.start();
 
+        let time_elapsed = event_time - timer.value();
+        let busy_percent = (time_elapsed * 100) / event_time;
+        print!(" {:03}% {}\r", busy_percent, time_elapsed);
         // Wait for the timer to expire
         while !timer.ev_n() {
             //println!("tmr: {:#010X} {:#06b}", timer.value(), (timer.csr() & 0xFF) as u8);
