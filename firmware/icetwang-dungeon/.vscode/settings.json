@@ -1,0 +1,11 @@
+{
+    "rust-analyzer.checkOnSave.allTargets": false,
+    "rust-analyzer.checkOnSave.extraArgs": [
+        "--target",
+        "riscv32i-unknown-none-elf"
+    ],
+    "rust-analyzer.cargo.unsetTest": [
+        "core",
+        "icetwang-dungeon"
+    ]
+}
