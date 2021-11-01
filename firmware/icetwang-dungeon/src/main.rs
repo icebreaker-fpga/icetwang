@@ -4,20 +4,22 @@
 extern crate panic_halt;
 
 use icetwang_pac;
-use ledstr::LEDString;
+use ledstr_hal::LEDStringHAL;
 use riscv_rt::entry;
 
 mod timer;
 mod rgbled;
 mod print;
-mod ledstr;
+mod ledstr_hal;
 mod joy;
 
 use timer::Timer;
 use rgbled::RGBLed;
 use joy::Joy;
 
-//const SYSTEM_CLOCK_FREQUENCY: u32 = 21_000_000;
+//const SYSTEM_CLOCK_FREQUENCY: u32 = 24_000_000;
+const LED_DEFAULT_COLOR: [u8; 3] = [0; 3];
+const LED_STRING_LENGTH: u16 = 144;
 
 // This is the entry point for the application.
 // It is not allowed to return.
@@ -44,17 +46,16 @@ fn real_main() -> ! {
     rgbled.state(true);
 
     // Configure the LED String
-    let mut ledstring = LEDString::new(peripherals.LEDSTR);
+    let mut ledstring_hal = LEDStringHAL::new(peripherals.LEDSTR);
 
-    ledstring.set_len(143);
-    ledstring.set_div(0);
-    ledstring.set_glob(1);
-    ledstring.write_rgb(0, ledstr::LED::new(0xFF, 0x00, 0x00));
-    ledstring.write_rgb(1, ledstr::LED::new(0x00, 0xFF, 0x00));
-    ledstring.write_rgb(2, ledstr::LED::new(0x00, 0x00, 0xFF));
-    ledstring.write_rgb(3, ledstr::LED::new(0x44, 0x44, 0x44));
+    ledstring_hal.set_len(LED_STRING_LENGTH - 1); // The HAL min length is 1 represented by 0
+    ledstring_hal.set_div(0);
+    ledstring_hal.set_glob(1);
+    for i  in 0..LED_STRING_LENGTH {
+        ledstring_hal.write_rgb(i, [i as u8, 0x00, 0x00]);
+    }
     // Output the inital LED string state
-    ledstring.start();
+    ledstring_hal.start();
 
     // Configure the Joystick
     let mut joy = Joy::new(peripherals.JOY);
@@ -76,7 +77,7 @@ fn real_main() -> ! {
 
         // Make sure the LED string is ready for us
         let mut bsy = false;
-        while ledstring.bsy_n() {
+        while ledstring_hal.bsy_n() {
             print!("b");
             bsy = true;
         }
@@ -85,10 +86,10 @@ fn real_main() -> ! {
         }
 
         val = val.wrapping_sub(1);
-        ledstring.write_rgb(0, ledstr::LED::new(val, 0x00, 0x00));
-        ledstring.write_rgb(1, ledstr::LED::new(0x00, 0xFF - val, 0x00));
-        ledstring.write_rgb(2, ledstr::LED::new(0x00, 0x00, val));
-        ledstring.start();
+        ledstring_hal.write_rgb(0, [val,  0x00,       0x00]);
+        ledstring_hal.write_rgb(1, [0x00, 0xFF - val, 0x00]);
+        ledstring_hal.write_rgb(2, [0x00, 0x00,       val]);
+        ledstring_hal.start();
 
         let time_elapsed = event_time - timer.value();
         let busy_percent = (time_elapsed * 100) / event_time;
