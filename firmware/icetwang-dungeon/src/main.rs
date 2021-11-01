@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+
+// Hardware crates
 extern crate panic_halt;
 
 use icetwang_pac;
@@ -17,14 +19,21 @@ use timer::Timer;
 use rgbled::RGBLed;
 use joy::Joy;
 
+// Game crates
+mod led_string;
+mod twang;
+
 //const SYSTEM_CLOCK_FREQUENCY: u32 = 24_000_000;
 const LED_DEFAULT_COLOR: [u8; 3] = [0; 3];
-const LED_STRING_LENGTH: u16 = 144;
+const LED_STRING_LENGTH: usize = 144;
 
 // This is the entry point for the application.
 // It is not allowed to return.
 
 fn real_main() -> ! {
+
+    // Initialize hardware
+    // -------------------
     let peripherals = icetwang_pac::Peripherals::take().unwrap();
 
     // Configure uart for the print macro
@@ -48,10 +57,10 @@ fn real_main() -> ! {
     // Configure the LED String
     let mut ledstring_hal = LEDStringHAL::new(peripherals.LEDSTR);
 
-    ledstring_hal.set_len(LED_STRING_LENGTH - 1); // The HAL min length is 1 represented by 0
+    ledstring_hal.set_len(LED_STRING_LENGTH as u16 - 1); // The HAL min length is 1 represented by 0
     ledstring_hal.set_div(0);
     ledstring_hal.set_glob(1);
-    for i  in 0..LED_STRING_LENGTH {
+    for i  in 0..LED_STRING_LENGTH as u16 {
         ledstring_hal.write_rgb(i, [i as u8, 0x00, 0x00]);
     }
     // Output the inital LED string state
@@ -60,13 +69,21 @@ fn real_main() -> ! {
     // Configure the Joystick
     let mut joy = Joy::new(peripherals.JOY);
 
-    // Print header
+    // Initialize Game
+    // ---------------
+    let mut led_string = led_string::LEDString::new(LED_DEFAULT_COLOR);
+    let mut twang = twang::Twang::new();
+    let mut lr_input: i32;
+    let mut fire_input: bool;
+    let mut time: u32 = 0;
+
+    // Print debug header
     println!("\nDir  CPU  us");
 
     // Start timer
     timer.enable();
 
-    let mut val: u8 = 0xFF;
+    //let mut val: u8 = 0xFF;
     loop {
         let joystate = joy.get();
         print!("{}{}{}{}",
@@ -74,6 +91,18 @@ fn real_main() -> ! {
             if joystate.right {">"} else {" "},
             if joystate.up {"^"} else {" "},
             if joystate.down {"v"} else {" "});
+
+        // Cycle game logic
+        lr_input = 0;
+        if joystate.left {
+            lr_input = -1;
+        }
+        if joystate.right {
+            lr_input =  1;
+        }
+        fire_input = joystate.up || joystate.down;
+
+        twang.cycle(lr_input, fire_input, &mut led_string, time);
 
         // Make sure the LED string is ready for us
         let mut bsy = false;
@@ -85,10 +114,10 @@ fn real_main() -> ! {
             println!("");
         }
 
-        val = val.wrapping_sub(1);
-        ledstring_hal.write_rgb(0, [val,  0x00,       0x00]);
-        ledstring_hal.write_rgb(1, [0x00, 0xFF - val, 0x00]);
-        ledstring_hal.write_rgb(2, [0x00, 0x00,       val]);
+        for i in 0..LED_STRING_LENGTH as u16 {
+            let led = &led_string[i as usize];
+            ledstring_hal.write_rgb(i, [led.r, led.g, led.b]);
+        }
         ledstring_hal.start();
 
         let time_elapsed = event_time - timer.value();
@@ -99,6 +128,9 @@ fn real_main() -> ! {
             //println!("tmr: {:#010X} {:#06b}", timer.value(), (timer.csr() & 0xFF) as u8);
         }
         timer.ev_rst(); // Reset event
+
+        // Advance time
+        time = time.wrapping_add(event_time/1000);
     }
 }
 
