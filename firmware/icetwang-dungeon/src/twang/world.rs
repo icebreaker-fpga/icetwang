@@ -35,7 +35,7 @@ impl World {
     pub fn new() -> World {
         World {
             player: Player::new(1),
-            enemies: [Enemy::new(100, -4, 20); 5],
+            enemies: [Enemy::new(100, 3, 10); 5],
         }
     }
 

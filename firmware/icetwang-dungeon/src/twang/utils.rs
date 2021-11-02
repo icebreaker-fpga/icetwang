@@ -52,3 +52,27 @@ where
         return (((i - imin) * ospan) / ispan) + omin;
     }
 }
+const SIN_LUT_SIZE: usize = 64;
+const SIN_LUT: [u8; SIN_LUT_SIZE as usize] = [
+    0,0,0,0,1,1,1,2,
+    2,3,4,5,5,6,7,9,
+    10,11,12,14,15,17,18,20,
+    21,23,25,27,29,31,33,35,
+    37,40,42,44,47,49,52,54,
+    57,59,62,65,67,70,73,76,
+    79,82,85,88,90,93,97,100,
+    103,106,109,112,115,118,121,124
+];
+
+pub fn sinu8(n: u8) -> u8 {
+    if n < SIN_LUT_SIZE as u8 { SIN_LUT[n as usize] }
+    else if n < (SIN_LUT_SIZE * 2) as u8 { 255 - SIN_LUT[(SIN_LUT_SIZE * 2 - n as usize - 1)] }
+    else if n < (SIN_LUT_SIZE * 3) as u8 { 255 - SIN_LUT[(n as usize - (SIN_LUT_SIZE * 2))] }
+    else { SIN_LUT[((SIN_LUT_SIZE * 4 - 1) - n as usize)] }
+}
+
+pub fn sini8(n: i8) -> i8 {
+    let nu = ((n as i32) + 128) as u8;
+    let su8 = sinu8(nu);
+    ((su8 as i32) - 128) as i8
+}
