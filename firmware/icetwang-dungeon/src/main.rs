@@ -122,7 +122,7 @@ fn real_main() -> ! {
 
         let time_elapsed = event_time - timer.value();
         let busy_percent = (time_elapsed * 100) / event_time;
-        print!(" {:03}% {}\r", busy_percent, time_elapsed);
+        print!(" {:03}% {} {}\r", busy_percent, time_elapsed, time);
         // Wait for the timer to expire
         while !timer.ev_n() {
             //println!("tmr: {:#010X} {:#06b}", timer.value(), (timer.csr() & 0xFF) as u8);
