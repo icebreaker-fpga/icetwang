@@ -108,4 +108,8 @@ impl Player {
         self.attacking_millis = time;
         self.attacking = true;
     }
+
+    pub fn reset(&mut self) {
+        self.position = 0;
+    }
 }

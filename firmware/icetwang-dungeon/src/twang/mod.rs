@@ -31,6 +31,7 @@ mod enemy;
 
 use world::World;
 use led_string::LEDString;
+use super::print;
 
 const GAME_FPS: u32 = 60;
 const GAME_TIMEOUT: u32 = 60;
@@ -41,6 +42,7 @@ pub struct Twang {
     screensaver_running: bool,
     world: World,
     input_idle_time: u32,
+    level: u32,
 }
 
 impl Twang {
@@ -51,6 +53,7 @@ impl Twang {
             screensaver_running: true,
             world: World::new(),
             input_idle_time: GAME_FPS * GAME_TIMEOUT,
+            level: 0,
         }
     }
 
@@ -64,16 +67,24 @@ impl Twang {
         self.screensaver_running = self.input_idle_time > (GAME_FPS * GAME_TIMEOUT);
 
         if self.screensaver_running {
+            self.level = 0;
+            self.build_level();
             self.screensaver.tick(&mut self.led_string, time);
         } else {
-            if fire_input {
-                self.world.player_attack(time);
+            print!("LVL {} ", self.level);
+            if self.world.exit_n() {
+                self.level += 1;
+                self.build_level()
+            } else {
+                if fire_input {
+                    self.world.player_attack(time);
+                }
+                self.world.player_set_speed(lr_input);
+                self.led_string.clear();
+                self.world.tick(&mut self.led_string, time);
+                self.world.collide();
+                self.world.draw(&mut self.led_string, time);
             }
-            self.world.player_set_speed(lr_input);
-            self.led_string.clear();
-            self.world.tick(&mut self.led_string, time);
-            self.world.collide();
-            self.world.draw(&mut self.led_string, time);
         }
     }
 
@@ -84,5 +95,30 @@ impl Twang {
 
     pub fn get_raw_led_len(&mut self) -> usize {
         self.led_string.raw_len()
+    }
+
+    fn build_level(&mut self) {
+        match self.level {
+            0 => { // Empty world, just get to the end
+                self.world.reset();
+            },
+            1 => { // One enemy, kill it
+                self.world.reset();
+                self.world.spawn_enemy(500, 0, 0);
+            },
+            2 => { // One enemy, kill it, it is coming for you
+                self.world.reset();
+                self.world.spawn_enemy(999, -1, 0);
+            },
+            3 => { // Two sin enemies
+                self.world.reset();
+                self.world.spawn_enemy(700, 3, 275);
+                self.world.spawn_enemy(500, 2, 250);
+            },
+            _ => {
+                self.level = 0;
+                self.world.reset();
+            }
+        }
     }
 }

@@ -35,7 +35,7 @@ impl World {
     pub fn new() -> World {
         World {
             player: Player::new(1),
-            enemies: [Enemy::new(700, 7, 275); 5],
+            enemies: [Enemy::new(500, 0, 0); 5],
         }
     }
 
@@ -58,6 +58,8 @@ impl World {
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(led_string);
         }
+        // Draw exit
+        led_string[999].set_rgb([0, 0, 255]);
     }
 
     pub fn player_set_speed(&mut self, val: i32) {
@@ -66,5 +68,26 @@ impl World {
 
     pub fn player_attack(&mut self, time: u32) {
         self.player.attack(time);
+    }
+
+    pub fn reset(&mut self) {
+        self.player.reset();
+        for mut e in self.enemies {
+            e.reset();
+        }
+    }
+
+    pub fn spawn_enemy(&mut self, position: i32, speed: i32, wobble: i32) {
+        for i in 0..self.enemies.len() {
+            if self.enemies[i].alive { continue }
+            else {
+                self.enemies[i].spawn(position, speed, wobble);
+                return;
+            }
+        }
+    }
+
+    pub fn exit_n(&self) -> bool {
+        self.player.position == 999
     }
 }

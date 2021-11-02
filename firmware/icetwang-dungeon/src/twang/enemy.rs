@@ -41,7 +41,7 @@ impl Enemy {
             origin: position,
             speed,
             wobble,
-            alive: true,
+            alive: false,
             player_side: 1
         }
     }
@@ -77,5 +77,17 @@ impl Enemy {
                 self.alive = false;
             }
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.alive = false;
+    }
+
+    pub fn spawn(&mut self, position: i32, speed: i32, wobble: i32) {
+        self.alive = true;
+        self.position = position;
+        self.origin = position;
+        self.speed = speed;
+        self.wobble = wobble;
     }
 }
