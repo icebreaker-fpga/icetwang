@@ -32,11 +32,15 @@ mod enemy;
 use world::World;
 use led_string::LEDString;
 
+const GAME_FPS: u32 = 60;
+const GAME_TIMEOUT: u32 = 60;
+
 pub struct Twang {
     led_string: LEDString,
     screensaver: screensaver::Screensaver,
     screensaver_running: bool,
     world: World,
+    input_idle_time: u32,
 }
 
 impl Twang {
@@ -45,11 +49,20 @@ impl Twang {
             led_string: LEDString::new([0,0,0]),
             screensaver: screensaver::Screensaver::new(56143584),
             screensaver_running: true,
-            world: World::new()
+            world: World::new(),
+            input_idle_time: GAME_FPS * GAME_TIMEOUT,
         }
     }
 
     pub fn cycle(&mut self, lr_input: i32, fire_input: bool, time: u32) {
+        // Check input idle
+        if lr_input == 0 && !fire_input {
+            self.input_idle_time += 1;
+        } else {
+            self.input_idle_time = 0;
+        }
+        self.screensaver_running = self.input_idle_time > (GAME_FPS * GAME_TIMEOUT);
+
         if self.screensaver_running {
             self.screensaver.tick(&mut self.led_string, time);
         } else {
