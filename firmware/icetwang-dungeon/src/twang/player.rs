@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use crate::led_string::LEDString;
+use super::led_string::LEDString;
 use super::utils::range_map;
 use super::enemy::Enemy;
 
@@ -41,7 +41,7 @@ impl Player {
         Player {
             position: 0,
             direction,
-            attack_width: 8,
+            attack_width: 70,
             attacking: false,
             attacking_millis: 0,
             attack_duration: 500,

@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use crate::led_string::*;
+use super::led_string::*;
 
 /*
 const DOTSPEED: u32 = 11;

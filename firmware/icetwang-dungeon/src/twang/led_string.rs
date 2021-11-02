@@ -25,7 +25,9 @@
 use core::ops::{Index, IndexMut, AddAssign};
 
 use crate::LED_STRING_LENGTH;
+use crate::twang::utils::range_map;
 // use std::iter::IntoIterator;
+const LED_STRING_VLENGTH: usize = 1000;
 
 /*****************************************************************************
  * LED
@@ -91,7 +93,11 @@ impl LEDString {
 		}
 	}
 
-    pub fn len(&self) -> usize{
+    pub fn len(&self) -> usize {
+        LED_STRING_VLENGTH
+    }
+
+    pub fn raw_len(&self) -> usize {
         self.leds.len()
     }
 
@@ -106,12 +112,8 @@ impl LEDString {
             led.nscale8(scale);
         }
     }
-}
 
-impl Index<usize> for LEDString {
-    type Output = LED;
-
-    fn index(&self, i: usize) -> &Self::Output {
+    pub fn get_raw(&mut self, i: usize) -> &LED {
         if i >= self.leds.len() {
             &self.null
         } else {
@@ -120,12 +122,28 @@ impl Index<usize> for LEDString {
     }
 }
 
+impl Index<usize> for LEDString {
+    type Output = LED;
+
+    fn index(&self, i: usize) -> &Self::Output {
+        let ri = range_map(i, 0, LED_STRING_VLENGTH, 0, LED_STRING_LENGTH);
+
+        if ri >= self.leds.len() {
+            &self.null
+        } else {
+            &self.leds[ri]
+        }
+    }
+}
+
 impl IndexMut<usize> for LEDString {
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
-        if i >= self.leds.len() {
+        let ri = range_map(i, 0, LED_STRING_VLENGTH, 0, LED_STRING_LENGTH);
+
+        if ri >= self.leds.len() {
             &mut self.null
         } else {
-            &mut self.leds[i]
+            &mut self.leds[ri]
         }
     }
 }

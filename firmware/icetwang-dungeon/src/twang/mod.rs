@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+mod led_string;
 mod utils;
 mod screensaver;
 mod world;
@@ -29,9 +30,10 @@ mod player;
 mod enemy;
 
 use world::World;
-use crate::led_string::LEDString;
+use led_string::LEDString;
 
 pub struct Twang {
+    led_string: LEDString,
     screensaver: bool,
     world: World
 }
@@ -39,23 +41,33 @@ pub struct Twang {
 impl Twang {
     pub fn new() -> Twang {
         Twang {
+            led_string: LEDString::new([0,0,0]),
             screensaver: false,
             world: World::new()
         }
     }
 
-    pub fn cycle(&mut self, lr_input: i32, fire_input: bool, led_string: &mut LEDString, time: u32) {
+    pub fn cycle(&mut self, lr_input: i32, fire_input: bool, time: u32) {
         if self.screensaver {
-            screensaver::tick(led_string, time);
+            screensaver::tick(&mut self.led_string, time);
         } else {
             if fire_input {
                 self.world.player_attack(time);
             }
             self.world.player_set_speed(lr_input);
-            led_string.clear();
-            self.world.tick(led_string, time);
+            self.led_string.clear();
+            self.world.tick(&mut self.led_string, time);
             self.world.collide();
-            self.world.draw(led_string, time);
+            self.world.draw(&mut self.led_string, time);
         }
+    }
+
+    pub fn get_raw_led(&mut self, i: usize) -> [u8; 3] {
+        let led = self.led_string.get_raw(i as usize);
+        [led.r, led.g, led.b]
+    }
+
+    pub fn get_raw_led_len(&mut self) -> usize {
+        self.led_string.raw_len()
     }
 }

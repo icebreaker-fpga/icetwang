@@ -22,8 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use crate::led_string::LEDString;
-use super::{player::Player, utils::sini8};
+use super::{led_string::LEDString, player::Player, utils::sini8};
 
 #[derive(Copy, Clone)]
 pub struct Enemy {
@@ -58,7 +57,7 @@ impl Enemy {
             return;
         }
         if self.wobble != 0 {
-            self.position = self.origin + ((sini8(((time / (3000 / 256)) % 0xFF) as i8) as i32 * self.speed) * self.wobble) / 256;
+            self.position = self.origin + ((sini8((((time / 37) as i32 * self.speed) & 0xFF) as i8) as i32) * self.wobble) / 255;
         } else {
             self.position += self.speed;
             if self.position >= led_string.len() as i32 || self.position < 0 {

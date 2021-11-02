@@ -20,7 +20,6 @@ use rgbled::RGBLed;
 use joy::Joy;
 
 // Game crates
-mod led_string;
 mod twang;
 
 //const SYSTEM_CLOCK_FREQUENCY: u32 = 24_000_000;
@@ -71,7 +70,6 @@ fn real_main() -> ! {
 
     // Initialize Game
     // ---------------
-    let mut led_string = led_string::LEDString::new(LED_DEFAULT_COLOR);
     let mut twang = twang::Twang::new();
     let mut lr_input: i32;
     let mut fire_input: bool;
@@ -83,8 +81,9 @@ fn real_main() -> ! {
     // Start timer
     timer.enable();
 
-    //let mut val: u8 = 0xFF;
+    // Main system loop
     loop {
+        // Get joystick input
         let joystate = joy.get();
         print!("{}{}{}{}",
             if joystate.left {"<"} else {" "},
@@ -95,14 +94,14 @@ fn real_main() -> ! {
         // Cycle game logic
         lr_input = 0;
         if joystate.left {
-            lr_input = -1;
+            lr_input = -10;
         }
         if joystate.right {
-            lr_input =  1;
+            lr_input =  10;
         }
         fire_input = joystate.up || joystate.down;
 
-        twang.cycle(lr_input, fire_input, &mut led_string, time);
+        twang.cycle(lr_input, fire_input, time);
 
         // Make sure the LED string is ready for us
         let mut bsy = false;
@@ -111,25 +110,28 @@ fn real_main() -> ! {
             bsy = true;
         }
         if bsy {
-            println!("");
+            println!(""); // Add a newline if we printed some delay indicators
         }
 
-        for i in 0..LED_STRING_LENGTH as u16 {
-            let led = &led_string[i as usize];
-            ledstring_hal.write_rgb(i, [led.r, led.g, led.b]);
+        // Send the LED values to the hardware
+        for i in 0..twang.get_raw_led_len() as u16 {
+            let led = twang.get_raw_led(i as usize);
+            ledstring_hal.write_rgb(i, led);
         }
         ledstring_hal.start();
 
+        // Calculate elapsed and percentage of the frame time
         let time_elapsed = event_time - timer.value();
         let busy_percent = (time_elapsed * 100) / event_time;
         print!(" {:03}% {} {}\r", busy_percent, time_elapsed, time);
+
         // Wait for the timer to expire
         while !timer.ev_n() {
             //println!("tmr: {:#010X} {:#06b}", timer.value(), (timer.csr() & 0xFF) as u8);
         }
         timer.ev_rst(); // Reset event
 
-        // Advance time
+        // Advance time (we track time in msec but the timer runs in usec)
         time = time.wrapping_add(event_time/1000);
     }
 }

@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use crate::led_string::LEDString;
+use super::led_string::LEDString;
 use super::enemy::Enemy;
 use super::player::Player;
 
@@ -35,7 +35,7 @@ impl World {
     pub fn new() -> World {
         World {
             player: Player::new(1),
-            enemies: [Enemy::new(100, 3, 10); 5],
+            enemies: [Enemy::new(700, 7, 275); 5],
         }
     }
 
