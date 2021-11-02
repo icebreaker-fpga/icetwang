@@ -22,92 +22,116 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use super::led_string::*;
+use super::led_string::{LEDString, LED, hsv_rainbow};
+use super::utils::sinu8;
+use crate::print;
 
-/*
 const DOTSPEED: u32 = 11;
 const DOTS_IN_BOWLS_COUNT: u32 = 3;
 const DOT_DISTANCE: u32 = 65535 / DOTS_IN_BOWLS_COUNT as u32;
 const DOT_BRIGHTNESS: u8 = 255;
-*/
 
-pub fn tick(led_string: &mut LEDString, time: u32) {
-    let mode = (time / 3000) % 5;
-    //let mode = 4;
+struct PRand {
+    seed: u32
+}
 
-    match mode {
-        /*0 => {
-            // Marching green <> orange
-            led_string.nscale8(250);
+impl PRand {
+    pub fn new(seed: u32) -> Self {
+        Self { seed }
+    }
 
-            let n = ((time / 250) % 10) as usize;
-            let c = ((20.0 + libm::sinhf(((time as f32 / 5000.0).to_radians()) * 255.0 + 1.0) * 33.0) % 256.0) as u8;
-            for i in 0..led_string.len() {
-                if (i % 10) == n {
+    pub fn next_u32(&mut self) -> u32 {
+        let a: u32 = 134775813;
+        let c: u32 = 1;
+        self.seed = a.wrapping_mul(self.seed).wrapping_add(c);
+        self.seed
+    }
+}
+
+pub struct Screensaver {
+    rand: PRand
+}
+
+impl Screensaver {
+    pub fn new(seed: u32) -> Self {
+        Self { rand: PRand::new(seed) }
+    }
+
+    pub fn tick(&mut self, led_string: &mut LEDString, time: u32) {
+        let mode = (time / 5000) % 6;
+        print!("Mode {} ", mode);
+        //let mode = 3;
+
+        match mode {
+            0 => {
+                // Marching green <> orange
+                led_string.nscale8(250);
+
+                let n = ((time / 250) % 100) as usize;
+                let c = 20 + (((sinu8(((time / 62) & 0xFF) as u8) as u32 * 66) / 255) % 255) as u8;
+                for i in (n..led_string.len()).step_by(100) {
                     led_string[i].set_hsv(c, 255, 150);
                 }
-            }
-        }*/
-        0|1 => {
-            // Random flashes
-            led_string.nscale8(250);
+            },
+            1 => {
+                // Random flashes
+                led_string.nscale8(250);
 
-            for i in 0..led_string.len() {
-                let val = time + i as u32;
-                if (val ^ (val >> 1)) < 0x000000FF {
-                    led_string[i].set_hsv(25, 255, 100)
+                for i in (0..led_string.len()).step_by(5) {
+                    if (self.rand.next_u32() % 1000) == 0 {
+                        led_string[i].set_hsv(25, 255, 100)
+                    }
                 }
-            }
-        }
-        /*2 => {
-            // Dots in bowl
-            led_string.clear();
+            },
+            2 | 3 => {
+                // Dots in bowl
+                led_string.clear();
 
-            for i in 0..DOTS_IN_BOWLS_COUNT {
-                let mm = (i * DOT_DISTANCE) + time.wrapping_mul(DOTSPEED);
-                let mm16 = mm % (1 << 16); // Trim to 16bit
-                let mmf = (mm16 as f32) / libm::powf(2.0, 15.0); // map to 0.0 - 2.0 range
-                let nsin = (libm::sinhf(mmf * core::f32::consts::PI) + 1.0) / 2.0;
-                let n = ((led_string.len() as f32 - 5.0) * nsin + 2.0) as usize;
-                let c: u8 = (mm / 50 % 255) as u8;
-                // println!("i {} mm {:#010X} mm16 {:#06X} mmf {:.4} nsin {:2.4}, n {:03}, c {:#04X}", i, mm, mm16, mmf, nsin, n, c);
-                led_string[n - 2] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 4));
-                led_string[n - 1] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 2));
-                led_string[n + 0] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS));
-                led_string[n + 1] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 2));
-                led_string[n + 2] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 4));
-            }
-        }*/
-        2 | 3 => {
-            // Sparkles
-            led_string.nscale8(128);
-
-            let c = time % 800;
-            let n;
-            if c < 240 {
-                n = 121 - c / 2;
-            } else {
-                n = 1;
-            }
-
-            for i in 0..led_string.len() {
-                let x = time + i as u32;
-                let val: u8 = ((x ^ (x >> 1)) & 0xFF) as u8; // should be rand
-                if val <= (n as u8) {
-                    led_string[i].set_rgb([100; 3]);
+                for i in 0..DOTS_IN_BOWLS_COUNT {
+                    let mm = (i * DOT_DISTANCE) + time.wrapping_mul(DOTSPEED);
+                    let mm16 = mm % (1 << 16); // Trim to 16bit
+                    let mmf = (mm16 >> 8) & 0xFF; // map to 0 - 255 range
+                    let nsin = sinu8(mmf as u8) as u32;
+                    let n = ((led_string.len() as u32 - 5).wrapping_mul(nsin) / 255) as usize;
+                    let c: u8 = (mm / 50 % 255) as u8;
+                    // println!("i {} mm {:#010X} mm16 {:#06X} mmf {:.4} nsin {:2.4}, n {:03}, c {:#04X}", i, mm, mm16, mmf, nsin, n, c);
+                    led_string[n - 2] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 4));
+                    led_string[n - 1] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 2));
+                    led_string[n + 0] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS));
+                    led_string[n + 1] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 2));
+                    led_string[n + 2] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 4));
                 }
-            }
-        }
-        4 => {
-            // Scroll dots
-            for i in 0..led_string.len() {
-                if (i + (time as usize / 100)) % 5 == 0 {
-                    led_string[i].set_rgb([100; 3]);
+            },
+            4 => {
+                // Sparkles
+                led_string.nscale8(128);
+
+                let c = time % 800;
+                let n;
+                if c < 240 {
+                    n = 121 - c / 2;
                 } else {
-                    led_string[i].set_rgb([0; 3]);
+                    n = 1;
                 }
-            }
+
+                for i in (0..led_string.len()).step_by(6) {
+                    let val: u8 = (self.rand.next_u32() & 0xFF) as u8;
+                    if val <= (n as u8) {
+                        led_string[i].set_rgb([100; 3]);
+                    }
+                }
+            },
+            5 => {
+                // Scroll dots
+                for i in (0..led_string.len()).step_by(6) {
+                    if ((i/6) + (time as usize / 100)) % 5 == 0 {
+                        led_string[i].set_rgb([100; 3]);
+                    } else {
+                        led_string[i].set_rgb([0; 3]);
+                    }
+                }
+            },
+            _ => ()
         }
-        _ => ()
     }
 }

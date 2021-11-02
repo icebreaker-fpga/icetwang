@@ -34,22 +34,24 @@ use led_string::LEDString;
 
 pub struct Twang {
     led_string: LEDString,
-    screensaver: bool,
-    world: World
+    screensaver: screensaver::Screensaver,
+    screensaver_running: bool,
+    world: World,
 }
 
 impl Twang {
     pub fn new() -> Twang {
         Twang {
             led_string: LEDString::new([0,0,0]),
-            screensaver: false,
+            screensaver: screensaver::Screensaver::new(56143584),
+            screensaver_running: true,
             world: World::new()
         }
     }
 
     pub fn cycle(&mut self, lr_input: i32, fire_input: bool, time: u32) {
-        if self.screensaver {
-            screensaver::tick(&mut self.led_string, time);
+        if self.screensaver_running {
+            self.screensaver.tick(&mut self.led_string, time);
         } else {
             if fire_input {
                 self.world.player_attack(time);
