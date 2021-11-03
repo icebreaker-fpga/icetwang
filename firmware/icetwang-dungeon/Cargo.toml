@@ -3,6 +3,7 @@ name = "icetwang-dungeon"
 version = "0.1.0"
 authors = ["Piotr Esden-Tempski <piotr@esden.net>"]
 edition = "2018"
+license = "BSD-2-Clause"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

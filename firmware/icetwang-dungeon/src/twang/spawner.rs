@@ -1,5 +1,3 @@
-use super::led_string;
-
 /*
  * Copyright (c) 2021, Piotr Esden-Tempski <piotr@esden.net>
  *
