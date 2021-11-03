@@ -30,6 +30,7 @@ mod player;
 mod enemy;
 mod spawner;
 mod lava;
+mod conveyor;
 
 use world::World;
 use led_string::LEDString;
@@ -120,7 +121,17 @@ impl Twang {
                 self.world.spawn_enemy(700, 3, 275);
                 self.world.spawn_enemy(500, 2, 250);
             },
-            5 => { // Enemy swarm
+            5 => { // Conveyor
+                self.world.spawn_conveyor(100, 600, -6);
+                self.world.spawn_enemy(800, 0, 0);
+            },
+            6 => { // Drainage
+                self.world.spawn_conveyor(100, 600, 1);
+                self.world.spawn_conveyor(600, 999, -1);
+                self.world.spawn_enemy(600, 0, 0);
+                self.world.spawn_spawner(time, 999, 5500, -3, 0);
+            },
+            7 => { // Enemy swarm
                 self.world.spawn_enemy(700, 3, 275);
                 self.world.spawn_enemy(500, 2, 250);
                 self.world.spawn_enemy(600, 3, 200);

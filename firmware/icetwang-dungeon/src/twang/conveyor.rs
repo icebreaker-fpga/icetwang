@@ -22,68 +22,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use super::led_string::LEDString;
+use super::{led_string::LEDString, utils::range_map};
+use crate::print;
 
-const LAVA_OFF_BRIGHTNESS: u8 = 15;
+const CONVEYOR_BRIGHTNESS: u8 = 40;
 
 #[derive(Clone, Copy)]
-pub struct Lava {
+pub struct Conveyor {
     pub pos_start: i32,
     pub pos_end: i32,
-    ontime: u32,
-    offtime: u32,
-    offset: u32,
-    laston: u32,
-    pub state: bool,
-    pub alive: bool,}
+    pub speed: i32,
+    pub alive: bool,
+}
 
-impl Lava {
+impl Conveyor {
     pub fn new() -> Self {
         Self {
             pos_start: 0,
             pos_end: 0,
-            ontime: 0,
-            offtime: 0,
-            offset: 0,
-            laston: 0,
-            state: false,
-            alive: false
+            speed: 0,
+            alive: false,
         }
     }
 
-    pub fn draw(&self, led_string: &mut LEDString) {
+    pub fn draw(&self, led_string: &mut LEDString, time: u32) {
         if !self.alive {
             return;
         }
-        if !self.state { // Off state
-            for i in self.pos_start..self.pos_end {
-                let flicker = if (i % 3) == 0 {LAVA_OFF_BRIGHTNESS/2} else {LAVA_OFF_BRIGHTNESS};
-                led_string[i as usize].set_rgb([LAVA_OFF_BRIGHTNESS + flicker,(LAVA_OFF_BRIGHTNESS + flicker) * 3 / 2,0]);
-            }
-        } else { // On state
-            for i in self.pos_start..self.pos_end {
-                if (i % 3) == 0 {
-                    led_string[i as usize].set_rgb([150, 0, 0]);
-                } else {
-                    led_string[i as usize].set_rgb([180, 100, 0])
-                }
-            }
-        }
-    }
 
-    pub fn tick(&mut self, time: u32) {
-        if !self.alive {
-            return;
-        }
-        if !self.state { // Off state
-            if self.laston + self.offtime < time {
-                self.state = true;
-                self.laston = time;
-            }
-        } else {
-            if self.laston + self.ontime < time {
-                self.state = false;
-                self.laston = time;
+        let time = time + 10000;
+        for i in (self.pos_start..self.pos_end).step_by(5) {
+            let n = ((if self.speed >= 0 {-i/5} else {i/5} + (time as i32 / 100)) % 5) as u8;
+            let b = range_map(n, 0, 5, 0, CONVEYOR_BRIGHTNESS);
+            print!("{} {} ", n, b);
+            if b > 0 {
+                led_string[i as usize].set_rgb([0, 0, b]);
             }
         }
     }
@@ -92,14 +65,10 @@ impl Lava {
         self.alive = false;
     }
 
-    pub fn spawn(&mut self, time: u32, pos_start: i32, pos_end: i32, ontime: u32, offtime: u32, offset: u32, state: bool) {
+    pub fn spawn(&mut self, pos_start: i32, pos_end: i32, speed: i32) {
         self.pos_start = pos_start;
         self.pos_end = pos_end;
-        self.ontime = ontime;
-        self.offtime = offtime;
-        self.offset = offset;
-        self.laston = time + offset;
-        self.state = state;
+        self.speed = speed;
         self.alive = true;
     }
 }

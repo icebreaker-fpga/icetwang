@@ -47,7 +47,7 @@ where
         ispan = imax - imin;
     }
     if invert {
-        return omin - (((i - imin) * ospan) / ispan);
+        return omin - (((i - imin) * ospan) / ispan); // TODO: we have a bug here! :/
     } else {
         return (((i - imin) * ospan) / ispan) + omin;
     }

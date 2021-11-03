@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use super::{led_string::LEDString, player::Player, lava::Lava, utils::sini8};
+use super::{conveyor::Conveyor, lava::Lava, led_string::LEDString, player::Player, utils::sini8};
 
 #[derive(Copy, Clone)]
 pub struct Enemy {
@@ -86,6 +86,16 @@ impl Enemy {
         if (self.position >= lava.pos_start) &&
             (self.position < lava.pos_end) {
             self.alive = false;
+        }
+    }
+
+    pub fn collide_conveyor(&mut self, conveyor: &Conveyor) {
+        if !self.alive || !conveyor.alive {
+            return;
+        }
+        if (self.position >= conveyor.pos_start) &&
+            (self.position < conveyor.pos_end) {
+            self.position += conveyor.speed;
         }
     }
 

@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use super::conveyor::Conveyor;
 use super::led_string::LEDString;
 use super::enemy::Enemy;
 use super::spawner::Spawner;
@@ -31,12 +32,14 @@ use super::player::Player;
 const ENEMY_POOL_COUNT: usize = 10;
 const SPAWNER_POOL_COUNT: usize = 2;
 const LAVA_POOL_COUNT: usize = 4;
+const CONVEYOR_POOL_COUNT: usize = 2;
 
 pub struct World {
     player: Player,
     enemies: [Enemy; ENEMY_POOL_COUNT],
     spawners: [Spawner; SPAWNER_POOL_COUNT],
     lavas: [Lava; LAVA_POOL_COUNT],
+    conveyors: [Conveyor; CONVEYOR_POOL_COUNT],
 }
 
 impl World {
@@ -46,6 +49,7 @@ impl World {
             enemies: [Enemy::new(); ENEMY_POOL_COUNT],
             spawners: [Spawner::new(); SPAWNER_POOL_COUNT],
             lavas: [Lava::new(); LAVA_POOL_COUNT],
+            conveyors: [Conveyor::new(); CONVEYOR_POOL_COUNT],
         }
     }
 
@@ -73,19 +77,30 @@ impl World {
                 self.enemies[j].collide_lava(&self.lavas[i]);
             }
         }
+        for i in 0..self.conveyors.len() {
+            self.player.collide_conveyor(&self.conveyors[i]);
+            for j in 0..self.enemies.len() {
+                self.enemies[j].collide_conveyor(&self.conveyors[i]);
+            }
+        }
     }
 
     pub fn draw(&self, led_string: &mut LEDString, time: u32) {
-        self.player.draw(led_string, time);
         for i in 0..self.spawners.len() {
             self.spawners[i].draw(led_string);
-        }
-        for i in 0..self.enemies.len() {
-            self.enemies[i].draw(led_string);
         }
         for i in 0..self.lavas.len() {
             self.lavas[i].draw(led_string);
         }
+        for i in 0..self.conveyors.len() {
+            self.conveyors[i].draw(led_string, time);
+        }
+        // Enemies walk on conveyors and other stuff
+        for i in 0..self.enemies.len() {
+            self.enemies[i].draw(led_string);
+        }
+        // Player walks on everything
+        self.player.draw(led_string, time);
         // Draw exit
         led_string[999].set_rgb([0, 0, 255]);
     }
@@ -108,6 +123,9 @@ impl World {
         }
         for i in 0..self.lavas.len() {
             self.lavas[i].reset();
+        }
+        for i in 0..self.conveyors.len() {
+            self.conveyors[i].reset();
         }
     }
 
@@ -136,6 +154,16 @@ impl World {
             if self.lavas[i].alive { continue }
             else {
                 self.lavas[i].spawn(time, pos_start, pos_end, ontime, offtime, offset, state);
+                return;
+            }
+        }
+    }
+
+    pub fn spawn_conveyor(&mut self, pos_start: i32, pos_end: i32, speed: i32) {
+        for i in 0..self.conveyors.len() {
+            if self.conveyors[i].alive { continue }
+            else {
+                self.conveyors[i].spawn(pos_start, pos_end, speed);
                 return;
             }
         }
