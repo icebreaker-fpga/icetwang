@@ -86,10 +86,10 @@ pub struct LEDString {
 
 impl LEDString {
 
-	pub fn new(color: [u8; 3]) -> LEDString {
+	pub fn new() -> LEDString {
 		LEDString {
-			leds: [LED::new(color); LED_STRING_LENGTH],
-            null: LED::new(color)
+			leds: [LED::new([0; 3]); LED_STRING_LENGTH],
+            null: LED::new([0; 3])
 		}
 	}
 

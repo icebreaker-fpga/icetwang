@@ -45,8 +45,6 @@ use joy::Joy;
 // Game crates
 mod twang;
 
-//const SYSTEM_CLOCK_FREQUENCY: u32 = 24_000_000;
-const LED_DEFAULT_COLOR: [u8; 3] = [0; 3];
 const LED_STRING_LENGTH: usize = 144;
 
 // This is the entry point for the application.

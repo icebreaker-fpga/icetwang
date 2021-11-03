@@ -51,7 +51,7 @@ pub struct Twang {
 impl Twang {
     pub fn new() -> Twang {
         Twang {
-            led_string: LEDString::new([0,0,0]),
+            led_string: LEDString::new(),
             screensaver: screensaver::Screensaver::new(56143584),
             screensaver_running: true,
             world: World::new(),
