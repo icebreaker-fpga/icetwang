@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use super::lava::Lava;
 use super::led_string::LEDString;
 use super::utils::range_map;
 use super::enemy::Enemy;
@@ -90,12 +91,22 @@ impl Player {
         }
     }
 
-    pub fn collide(&mut self, enemy: &Enemy) {
+    pub fn collide_enemy(&mut self, enemy: &Enemy) {
         if !enemy.alive {
             return;
         }
         if ((enemy.player_side == 1) && (self.position >= enemy.position)) ||
             ((enemy.player_side == -1) && (self.position <= enemy.position)) {
+            self.die();
+        }
+    }
+
+    pub fn collide_lava(&mut self, lava: &Lava) {
+        if !lava.alive || !lava.state {
+            return;
+        }
+        if (self.position >= lava.pos_start) &&
+            (self.position < lava.pos_end) {
             self.die();
         }
     }

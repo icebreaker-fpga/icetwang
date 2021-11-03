@@ -29,6 +29,7 @@ mod world;
 mod player;
 mod enemy;
 mod spawner;
+mod lava;
 
 use world::World;
 use led_string::LEDString;
@@ -110,11 +111,16 @@ impl Twang {
             2 => { // Spawning enemies at exit every 3 seconds
                 self.world.spawn_spawner(time, 999, 3000, -2, 0);
             },
-            3 => { // Two sin enemies
+            3 => { // Lava intro
+                self.world.spawn_lava(time, 400, 490, 2000, 2000, 0, false);
+                self.world.spawn_enemy(350, -1, 0);
+                self.world.spawn_spawner(time, 999, 5500, -3, 0)
+            },
+            4 => { // Two sin enemies
                 self.world.spawn_enemy(700, 3, 275);
                 self.world.spawn_enemy(500, 2, 250);
             },
-            4 => { // Enemy swarm
+            5 => { // Enemy swarm
                 self.world.spawn_enemy(700, 3, 275);
                 self.world.spawn_enemy(500, 2, 250);
                 self.world.spawn_enemy(600, 3, 200);

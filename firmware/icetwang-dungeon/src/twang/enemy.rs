@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use super::{led_string::LEDString, player::Player, utils::sini8};
+use super::{led_string::LEDString, player::Player, lava::Lava, utils::sini8};
 
 #[derive(Copy, Clone)]
 pub struct Enemy {
@@ -66,7 +66,7 @@ impl Enemy {
         }
     }
 
-    pub fn collide(&mut self, player: &Player) {
+    pub fn collide_player(&mut self, player: &Player) {
         if !self.alive {
             return;
         }
@@ -76,6 +76,16 @@ impl Enemy {
             if amin < self.position && self.position < amax {
                 self.alive = false;
             }
+        }
+    }
+
+    pub fn collide_lava(&mut self, lava: &Lava) {
+        if !self.alive || !lava.alive || !lava.state {
+            return;
+        }
+        if (self.position >= lava.pos_start) &&
+            (self.position < lava.pos_end) {
+            self.alive = false;
         }
     }
 

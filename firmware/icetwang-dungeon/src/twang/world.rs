@@ -25,15 +25,18 @@
 use super::led_string::LEDString;
 use super::enemy::Enemy;
 use super::spawner::Spawner;
+use super::lava::Lava;
 use super::player::Player;
 
 const ENEMY_POOL_COUNT: usize = 10;
 const SPAWNER_POOL_COUNT: usize = 2;
+const LAVA_POOL_COUNT: usize = 4;
 
 pub struct World {
     player: Player,
     enemies: [Enemy; ENEMY_POOL_COUNT],
     spawners: [Spawner; SPAWNER_POOL_COUNT],
+    lavas: [Lava; LAVA_POOL_COUNT],
 }
 
 impl World {
@@ -42,6 +45,7 @@ impl World {
             player: Player::new(1),
             enemies: [Enemy::new(); ENEMY_POOL_COUNT],
             spawners: [Spawner::new(); SPAWNER_POOL_COUNT],
+            lavas: [Lava::new(); LAVA_POOL_COUNT],
         }
     }
 
@@ -53,12 +57,21 @@ impl World {
         for i in 0..self.spawners.len() {
             self.spawners[i].tick(time, &mut self.enemies)
         }
+        for i in 0..self.lavas.len() {
+            self.lavas[i].tick(time);
+        }
     }
 
     pub fn collide(&mut self) {
         for i in 0..self.enemies.len() {
-            self.player.collide(&self.enemies[i]);
-            self.enemies[i].collide(&self.player);
+            self.player.collide_enemy(&self.enemies[i]);
+            self.enemies[i].collide_player(&self.player);
+        }
+        for i in 0..self.lavas.len() {
+            self.player.collide_lava(&self.lavas[i]);
+            for j in 0..self.enemies.len() {
+                self.enemies[j].collide_lava(&self.lavas[i]);
+            }
         }
     }
 
@@ -69,6 +82,9 @@ impl World {
         }
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(led_string);
+        }
+        for i in 0..self.lavas.len() {
+            self.lavas[i].draw(led_string);
         }
         // Draw exit
         led_string[999].set_rgb([0, 0, 255]);
@@ -90,6 +106,9 @@ impl World {
         for i in 0..self.spawners.len() {
             self.spawners[i].reset();
         }
+        for i in 0..self.lavas.len() {
+            self.lavas[i].reset();
+        }
     }
 
     pub fn spawn_enemy(&mut self, position: i32, speed: i32, wobble: i32) {
@@ -107,6 +126,16 @@ impl World {
             if self.spawners[i].alive { continue }
             else {
                 self.spawners[i].spawn(time, position, rate, speed, activate);
+                return;
+            }
+        }
+    }
+
+    pub fn spawn_lava(&mut self, time: u32, pos_start: i32, pos_end: i32, ontime: u32, offtime: u32, offset: u32, state: bool) {
+        for i in 0..self.lavas.len() {
+            if self.lavas[i].alive { continue }
+            else {
+                self.lavas[i].spawn(time, pos_start, pos_end, ontime, offtime, offset, state);
                 return;
             }
         }
