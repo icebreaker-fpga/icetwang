@@ -28,6 +28,7 @@ mod screensaver;
 mod world;
 mod player;
 mod enemy;
+mod spawner;
 
 use world::World;
 use led_string::LEDString;
@@ -68,13 +69,13 @@ impl Twang {
 
         if self.screensaver_running {
             self.level = 0;
-            self.build_level();
+            self.build_level(time);
             self.screensaver.tick(&mut self.led_string, time);
         } else {
             print!("LVL {} ", self.level);
             if self.world.exit_n() {
                 self.level += 1;
-                self.build_level()
+                self.build_level(time)
             } else {
                 if fire_input {
                     self.world.player_attack(time);
@@ -97,27 +98,33 @@ impl Twang {
         self.led_string.raw_len()
     }
 
-    fn build_level(&mut self) {
+    fn build_level(&mut self, time: u32) {
+        self.world.reset();
         match self.level {
-            0 => { // Empty world, just get to the end
-                self.world.reset();
-            },
-            1 => { // One enemy, kill it
-                self.world.reset();
+            0 => { // One enemy, kill it
                 self.world.spawn_enemy(500, 0, 0);
             },
-            2 => { // One enemy, kill it, it is coming for you
-                self.world.reset();
+            1 => { // One enemy, kill it, it is coming for you
                 self.world.spawn_enemy(999, -1, 0);
             },
+            2 => { // Spawning enemies at exit every 3 seconds
+                self.world.spawn_spawner(time, 999, 3000, -2, 0);
+            },
             3 => { // Two sin enemies
-                self.world.reset();
                 self.world.spawn_enemy(700, 3, 275);
                 self.world.spawn_enemy(500, 2, 250);
             },
+            4 => { // Enemy swarm
+                self.world.spawn_enemy(700, 3, 275);
+                self.world.spawn_enemy(500, 2, 250);
+                self.world.spawn_enemy(600, 3, 200);
+                self.world.spawn_enemy(800, 2, 350);
+                self.world.spawn_enemy(400, 3, 150);
+                self.world.spawn_enemy(450, 2, 400);
+            },
             _ => {
                 self.level = 0;
-                self.world.reset();
+                self.build_level(time);
             }
         }
     }

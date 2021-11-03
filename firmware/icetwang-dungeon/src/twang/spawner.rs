@@ -1,5 +1,7 @@
+use super::led_string;
+
 /*
- * Copyright (c) 2020, Piotr Esden-Tempski <piotr@esden.net>
+ * Copyright (c) 2021, Piotr Esden-Tempski <piotr@esden.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -22,72 +24,62 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use super::{led_string::LEDString, player::Player, utils::sini8};
+use super::{led_string::LEDString,enemy::Enemy};
 
-#[derive(Copy, Clone)]
-pub struct Enemy {
-    pub position: i32,
-    origin: i32,
-    speed: i32,
-    wobble: i32,
-    pub alive: bool,
-    pub player_side: i32
+#[derive(Clone, Copy)]
+pub struct Spawner {
+    position: i32,      // Spawner position
+    rate: u32,          // Spawn rate in ms
+    speed: i32,         // Eneemy speed and direction when exiting the spawner
+    last_spawned: u32,  // Time of last spawn
+    activate: u32,      // Time of activation
+    pub alive: bool,        // Is this spawner alive
 }
 
-impl Enemy {
+impl Spawner {
     pub fn new() -> Self {
         Self {
             position: 500,
-            origin: 500,
+            rate: 0,
             speed: 0,
-            wobble: 0,
+            last_spawned: 0,
+            activate: 0,
             alive: false,
-            player_side: 1,
         }
     }
 
     pub fn draw(&self, led_string: &mut LEDString) {
         if self.alive {
-            led_string[self.position as usize].set_rgb([255, 0, 0]);
+            led_string[self.position as usize].set_rgb([64, 0, 64]);
         }
     }
 
-    pub fn tick(&mut self, led_string: &LEDString, time: u32) {
-        if !self.alive {
+    pub fn tick(&mut self, time: u32, enemies: &mut [Enemy]) {
+        if !self.alive || self.activate >= time {
             return;
         }
-        if self.wobble != 0 {
-            self.position = self.origin + ((sini8((((time / 37) as i32 * self.speed) & 0xFF) as i8) as i32) * self.wobble) / 255;
-        } else {
-            self.position += self.speed;
-            if self.position >= led_string.len() as i32 || self.position < 0 {
-                self.alive = false;
+        if self.last_spawned + self.rate < time || self.last_spawned == 0 {
+            for i in 0..enemies.len() {
+                    if enemies[i].alive { continue }
+                else {
+                    enemies[i].spawn(self.position, self.speed, 0);
+                    self.last_spawned = time;
+                    return;
+                }
             }
-        }
-    }
-
-    pub fn collide(&mut self, player: &Player) {
-        if !self.alive {
-            return;
-        }
-        if player.attacking {
-            let amin = player.position - (player.attack_width / 2);
-            let amax = player.position + (player.attack_width / 2);
-            if amin < self.position && self.position < amax {
-                self.alive = false;
-            }
-        }
+           }
     }
 
     pub fn reset(&mut self) {
         self.alive = false;
     }
 
-    pub fn spawn(&mut self, position: i32, speed: i32, wobble: i32) {
-        self.alive = true;
+    pub fn spawn(&mut self, time: u32, position: i32, rate: u32, speed: i32, activate: u32) {
         self.position = position;
-        self.origin = position;
+        self.rate = rate;
         self.speed = speed;
-        self.wobble = wobble;
+        self.last_spawned = 0;
+        self.activate = time + activate;
+        self.alive = true;
     }
 }

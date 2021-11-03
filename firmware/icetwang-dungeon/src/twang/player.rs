@@ -37,8 +37,8 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(direction: i32) -> Player {
-        Player {
+    pub fn new(direction: i32) -> Self {
+        Self {
             position: 0,
             direction,
             attack_width: 70,

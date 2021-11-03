@@ -24,18 +24,24 @@
 
 use super::led_string::LEDString;
 use super::enemy::Enemy;
+use super::spawner::Spawner;
 use super::player::Player;
+
+const ENEMY_POOL_COUNT: usize = 10;
+const SPAWNER_POOL_COUNT: usize = 2;
 
 pub struct World {
     player: Player,
-    enemies: [Enemy; 5]
+    enemies: [Enemy; ENEMY_POOL_COUNT],
+    spawners: [Spawner; SPAWNER_POOL_COUNT],
 }
 
 impl World {
     pub fn new() -> World {
         World {
             player: Player::new(1),
-            enemies: [Enemy::new(500, 0, 0); 5],
+            enemies: [Enemy::new(); ENEMY_POOL_COUNT],
+            spawners: [Spawner::new(); SPAWNER_POOL_COUNT],
         }
     }
 
@@ -43,6 +49,9 @@ impl World {
         self.player.tick(&led_string, time);
         for i in 0..self.enemies.len() {
             self.enemies[i].tick(&led_string, time);
+        }
+        for i in 0..self.spawners.len() {
+            self.spawners[i].tick(time, &mut self.enemies)
         }
     }
 
@@ -55,6 +64,9 @@ impl World {
 
     pub fn draw(&self, led_string: &mut LEDString, time: u32) {
         self.player.draw(led_string, time);
+        for i in 0..self.spawners.len() {
+            self.spawners[i].draw(led_string);
+        }
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(led_string);
         }
@@ -72,8 +84,11 @@ impl World {
 
     pub fn reset(&mut self) {
         self.player.reset();
-        for mut e in self.enemies {
-            e.reset();
+        for i in 0..self.enemies.len() {
+            self.enemies[i].reset();
+        }
+        for i in 0..self.spawners.len() {
+            self.spawners[i].reset();
         }
     }
 
@@ -82,6 +97,16 @@ impl World {
             if self.enemies[i].alive { continue }
             else {
                 self.enemies[i].spawn(position, speed, wobble);
+                return;
+            }
+        }
+    }
+
+    pub fn spawn_spawner(&mut self, time: u32, position: i32, rate: u32, speed: i32, activate: u32) {
+        for i in 0..self.spawners.len() {
+            if self.spawners[i].alive { continue }
+            else {
+                self.spawners[i].spawn(time, position, rate, speed, activate);
                 return;
             }
         }
