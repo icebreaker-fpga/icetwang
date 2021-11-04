@@ -35,14 +35,34 @@ mod conveyor;
 use world::World;
 use led_string::LEDString;
 use super::print;
+use utils::range_map;
 
 const GAME_FPS: u32 = 60;
 const GAME_TIMEOUT: u32 = 60;
+const STARTUP_WIPEUP_DUR: u32 = 200;
+const STARTUP_SPARKLE_DUR: u32 = 1300;
+const STARTUP_FADE_DUR: u32 = 1500;
+
+#[derive(Clone, Copy)]
+enum StartStage {
+    Wipeup,
+    Sparkle,
+    Fade,
+}
+
+enum State {
+    Screensaver,
+    Starting{stage: StartStage, start_time: u32, },
+    Playing,
+    Death,
+    Lives,
+    Win,
+}
 
 pub struct Twang {
     led_string: LEDString,
     screensaver: screensaver::Screensaver,
-    screensaver_running: bool,
+    state: State,
     world: World,
     input_idle_time: u32,
     level: u32,
@@ -53,7 +73,7 @@ impl Twang {
         Twang {
             led_string: LEDString::new(),
             screensaver: screensaver::Screensaver::new(56143584),
-            screensaver_running: true,
+            state: State::Screensaver,
             world: World::new(),
             input_idle_time: GAME_FPS * GAME_TIMEOUT,
             level: 0,
@@ -61,34 +81,89 @@ impl Twang {
     }
 
     pub fn cycle(&mut self, lr_input: i32, fire_input: bool, time: u32) {
-        // Check input idle
-        if lr_input == 0 && !fire_input {
-            self.input_idle_time += 1;
-        } else {
-            self.input_idle_time = 0;
-        }
-        self.screensaver_running = self.input_idle_time > (GAME_FPS * GAME_TIMEOUT);
 
-        if self.screensaver_running {
-            self.level = 0;
-            self.build_level(time);
-            self.screensaver.tick(&mut self.led_string, time);
-        } else {
-            print!("LVL {} ", self.level);
-            if self.world.exit_n() {
-                self.level += 1;
-                self.build_level(time)
-            } else {
-                if fire_input {
-                    self.world.player_attack(time);
+        self.state = match self.state {
+            State::Screensaver => {
+                self.screensaver.tick(&mut self.led_string, time);
+                if lr_input != 0 || fire_input {
+                    self.input_idle_time = 0;
+                    State::Starting{stage: StartStage::Wipeup, start_time: time}
+                } else {
+                    State::Screensaver
                 }
-                self.world.player_set_speed(lr_input);
-                self.led_string.clear();
-                self.world.tick(&mut self.led_string, time);
-                self.world.collide();
-                self.world.draw(&mut self.led_string, time);
+            },
+            State::Starting {stage, start_time} => {
+                match stage {
+                    StartStage::Wipeup => {
+                        let n = range_map(time - start_time, 0, STARTUP_WIPEUP_DUR, 0, self.led_string.len() as u32);
+                        for i in 0..n {
+                            self.led_string[i as usize].set_rgb([0, 255, 0])
+                        }
+                        if time < (start_time + STARTUP_WIPEUP_DUR) {
+                            State::Starting{stage: StartStage::Wipeup, start_time: start_time}
+                        } else {
+                            State::Starting{stage: StartStage::Sparkle, start_time: time}
+                        }
+                    },
+                    StartStage::Sparkle => {
+                        // we need rand to sparkle
+                        if time < (start_time + STARTUP_SPARKLE_DUR) {
+                            State::Starting{stage: StartStage::Sparkle, start_time: start_time}
+                        } else {
+                            State::Starting{stage: StartStage::Fade, start_time: time}
+                        }
+                    },
+                    StartStage::Fade => {
+                        let n = range_map(time - start_time, 0, STARTUP_FADE_DUR, 0, self.led_string.len() as u32);
+                        let brightness = range_map(time - start_time, 0, STARTUP_FADE_DUR, 255, 0) as u8;
+                        for i in n..self.led_string.len() as u32 {
+                            self.led_string[i as usize].set_rgb([0, brightness, 0]);
+                        }
+                        if time < (start_time + STARTUP_FADE_DUR) {
+                            State::Starting{stage: StartStage::Fade, start_time: start_time}
+                        } else {
+                            self.level = 0;
+                            self.build_level(time);
+                            State::Playing
+                        }
+                    }
+                }
+            },
+            State::Playing => {
+                print!("LVL {} ", self.level);
+                if self.world.exit_n() {
+                    self.level += 1;
+                    self.build_level(time)
+                } else {
+                    if fire_input {
+                        self.world.player_attack(time);
+                    }
+                    self.world.player_set_speed(lr_input);
+                    self.led_string.clear();
+                    self.world.tick(&mut self.led_string, time);
+                    self.world.collide();
+                    self.world.draw(&mut self.led_string, time);
+                }
+                if lr_input == 0 && !fire_input {self.input_idle_time += 1;}
+                else {self.input_idle_time = 0;}
+                if self.input_idle_time >= (GAME_FPS * GAME_TIMEOUT) {State::Screensaver}
+                else {State::Playing}
+            },
+            State::Death => {
+                // Reset level and decrement lives here
+                // if lives 0 return State::Starting
+                State::Lives
+            },
+            State::Lives => {
+                // Render lives
+                State::Playing
+            },
+            State::Win => {
+                // Render winning animation here
+                State::Starting{stage: StartStage::Wipeup, start_time: time}
             }
-        }
+        };
+
     }
 
     pub fn get_raw_led(&mut self, i: usize) -> [u8; 3] {
