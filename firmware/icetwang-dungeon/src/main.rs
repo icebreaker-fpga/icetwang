@@ -135,9 +135,10 @@ fn real_main() -> ! {
         }
 
         // Send the LED values to the hardware
-        for i in 0..twang.get_raw_led_len() as u16 {
+        let len = twang.get_raw_led_len();
+        for i in 0..len {
             let led = twang.get_raw_led(i as usize);
-            ledstring_hal.write_rgb(i, led);
+            ledstring_hal.write_rgb((len - 1 - i) as u16, led);
         }
         ledstring_hal.start();
 

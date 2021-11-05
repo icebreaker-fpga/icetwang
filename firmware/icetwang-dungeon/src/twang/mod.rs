@@ -40,7 +40,7 @@ use utils::range_map;
 const GAME_FPS: u32 = 60;
 const GAME_TIMEOUT: u32 = 60;
 const STARTUP_WIPEUP_DUR: u32 = 200;
-const STARTUP_SPARKLE_DUR: u32 = 1300;
+const STARTUP_SPARKLE_DUR: u32 = 100;//1300; when we actually have sparcle this should be longer
 const STARTUP_FADE_DUR: u32 = 1500;
 
 #[derive(Clone, Copy)]
