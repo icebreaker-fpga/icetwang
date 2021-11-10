@@ -45,7 +45,13 @@ use joy::Joy;
 // Game crates
 mod twang;
 
+/* 4m long 60 LED/m strip */
+//const LED_STRING_LENGTH: usize = 4 * 60;
+//const LED_GLOBAL_BRIGHTNESS: u16 = 0x1F; /* for outdoor use */
+
+/* 1m long 144 LED/m strip */
 const LED_STRING_LENGTH: usize = 144;
+const LED_GLOBAL_BRIGHTNESS: u16 = 2; /* for indoor use */
 
 // This is the entry point for the application.
 // It is not allowed to return.
@@ -79,7 +85,7 @@ fn real_main() -> ! {
 
     ledstring_hal.set_len(LED_STRING_LENGTH as u16 - 1); // The HAL min length is 1 represented by 0
     ledstring_hal.set_div(0);
-    ledstring_hal.set_glob(1);
+    ledstring_hal.set_glob(LED_GLOBAL_BRIGHTNESS);
     for i  in 0..LED_STRING_LENGTH as u16 {
         ledstring_hal.write_rgb(i, [i as u8, 0x00, 0x00]);
     }
