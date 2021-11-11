@@ -26,7 +26,10 @@
 #![no_main]
 
 // Hardware crates
-extern crate panic_halt;
+//extern crate panic_halt;
+
+use core::panic::PanicInfo;
+use core::sync::atomic::{self, Ordering};
 
 use icetwang_pac;
 use ledstr_hal::LEDStringHAL;
@@ -169,3 +172,11 @@ fn main() -> ! {
     real_main();
 }
 
+#[inline(never)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("\r\n==> {}", info);
+    loop {
+        atomic::compiler_fence(Ordering::SeqCst);
+    }
+}

@@ -10,7 +10,6 @@ license = "BSD-2-Clause"
 [dependencies]
 icetwang-pac = { path = "../icetwang-pac" }
 riscv-rt  = "0.7.0"
-panic-halt = "0.2"
 vcell = "0.1.2"
 
 [profile.release]
