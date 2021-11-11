@@ -92,7 +92,7 @@ impl Screensaver {
                     let mm16 = mm % (1 << 16); // Trim to 16bit
                     let mmf = (mm16 >> 8) & 0xFF; // map to 0 - 255 range
                     let nsin = sinu8(mmf as u8) as u32;
-                    let n = ((led_string.len() as u32 - 5).wrapping_mul(nsin) / 255) as usize;
+                    let n = 2 + ((led_string.len() as u32 - 5).wrapping_mul(nsin) / 255) as usize;
                     let c: u8 = (mm / 50 % 255) as u8;
                     // println!("i {} mm {:#010X} mm16 {:#06X} mmf {:.4} nsin {:2.4}, n {:03}, c {:#04X}", i, mm, mm16, mmf, nsin, n, c);
                     led_string[n - 2] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 4));

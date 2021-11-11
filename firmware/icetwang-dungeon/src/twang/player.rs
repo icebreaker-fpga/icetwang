@@ -62,7 +62,9 @@ impl Player {
     fn draw_attack(&self, led_string: &mut LEDString, time: u32) {
         let mut n = range_map(time - self.attacking_millis, 0, self.attack_duration, 100, 5) as u8;
         for i in (self.position - (self.attack_width / 2) + 1)..(self.position + (self.attack_width / 2)) {
-            led_string[i as usize].set_rgb([0, 0, n]);
+            if i >= 0 && i < led_string.len() as i32 {
+                led_string[i as usize].set_rgb([0, 0, n]);
+            }
         }
         if n > 90 {
             n = 255;
@@ -71,8 +73,13 @@ impl Player {
             n = 0;
             led_string[self.position as usize].set_rgb([0, 255, 0]);
         }
-        led_string[(self.position - (self.attack_width / 2)) as usize].set_rgb([n, n, 255]);
-        led_string[(self.position + (self.attack_width / 2)) as usize].set_rgb([n, n, 255]);
+        let hlf_att_wdth = self.attack_width / 2;
+        if self.position >= hlf_att_wdth {
+            led_string[(self.position - (self.attack_width / 2)) as usize].set_rgb([n, n, 255]);
+        }
+        if (self.position + hlf_att_wdth) < led_string.len() as i32 {
+            led_string[(self.position + (self.attack_width / 2)) as usize].set_rgb([n, n, 255]);
+        }
     }
 
     pub fn tick(&mut self, led_string: &LEDString, time: u32) {
