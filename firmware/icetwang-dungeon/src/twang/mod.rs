@@ -34,6 +34,7 @@ mod conveyor;
 
 use world::World;
 use led_string::LEDString;
+#[cfg(feature = "icetwanghw")]
 use super::print;
 use utils::range_map;
 

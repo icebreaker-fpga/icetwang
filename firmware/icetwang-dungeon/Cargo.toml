@@ -12,6 +12,10 @@ icetwang-pac = { path = "../icetwang-pac" }
 riscv-rt  = "0.7.0"
 vcell = "0.1.2"
 
+[features]
+icetwanghw = []
+default = ["icetwanghw"]
+
 [profile.release]
 # Keep debug information for release builds, for easier debugging.
 # It will be removed during the conversion to the .dfu file.

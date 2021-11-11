@@ -24,6 +24,7 @@
 
 use super::led_string::{LEDString, LED, hsv_rainbow};
 use super::utils::sinu8;
+#[cfg(feature = "icetwanghw")]
 use crate::print;
 
 const DOTSPEED: u32 = 11;
