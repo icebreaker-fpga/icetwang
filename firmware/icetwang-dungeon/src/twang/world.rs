@@ -111,6 +111,10 @@ impl World {
         self.player.attack(time);
     }
 
+    pub fn player_set_attack_width(&mut self, width: i32) {
+        self.player.attack_width = width;
+    }
+
     pub fn reset(&mut self) {
         self.player.reset();
         for i in 0..self.enemies.len() {

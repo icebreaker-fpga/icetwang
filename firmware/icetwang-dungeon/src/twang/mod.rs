@@ -228,6 +228,70 @@ impl Twang {
                 self.world.spawn_enemy(400, 3, 150);
                 self.world.spawn_enemy(450, 2, 400);
             },
+            8 => { // Sin enemy #2 practice (slow conveyor)
+                self.world.spawn_enemy(700, 7, 275);
+                self.world.spawn_enemy(500, 5, 250);
+                self.world.spawn_spawner(time, 999, 5500, -4, 3000);
+                self.world.spawn_spawner(time, 0, 5500, -5, 10000);
+                self.world.spawn_conveyor(100, 900, -4);
+            },
+            9 => { // Conveyor of enemies
+                self.world.spawn_conveyor(50, 998, 6);
+                self.world.spawn_enemy(300, 0, 0);
+                self.world.spawn_enemy(400, 0, 0);
+                self.world.spawn_enemy(500, 0, 0);
+                self.world.spawn_enemy(600, 0, 0);
+                self.world.spawn_enemy(700, 0, 0);
+                self.world.spawn_enemy(800, 0, 0);
+                self.world.spawn_enemy(900, 0, 0);
+            },
+            10 => { // Lava run
+                self.world.spawn_lava(time, 195, 300, 2000, 2000, 0, false);
+                self.world.spawn_lava(time, 400, 500, 2000, 2000, 0, false);
+                self.world.spawn_lava(time, 600, 700, 2000, 2000, 0, false);
+                self.world.spawn_spawner(time, 999, 3800, 4, 0);
+            },
+            11 => { // Sin enemy #2 (fast conveyor)
+                self.world.spawn_enemy(800, -7, 275);
+                self.world.spawn_enemy(700, -7, 275);
+                self.world.spawn_enemy(500, -5, 250);
+                self.world.spawn_spawner(time, 999, 3000, -4, 3000);
+                self.world.spawn_spawner(time, 0, 5500, 5, 10000);
+                self.world.spawn_conveyor(100, 900, 6);
+            },
+            12 => { // less lava, more enemies
+                self.world.spawn_lava(time, 350, 455, 2000, 2000, 0, false);
+                self.world.spawn_lava(time, 660, 760, 2000, 2000, 0, false);
+                self.world.spawn_spawner(time, 999, 3800, -4, 270);
+                self.world.spawn_enemy(800, 0, 0);
+            },
+            13 => { // pushed towards lava
+                self.world.spawn_conveyor(100, 800, 1);
+                self.world.spawn_lava(time, 800, 850, 1000, 2000, 0, false);
+                self.world.spawn_spawner(time, 999, 2000, -4, 0);
+            },
+            14 => { // quick lava
+                self.world.spawn_spawner(time, 0, 2300, 6, 7000);
+                self.world.spawn_lava(time, 200, 400, 1000, 2000, 0, false);
+                self.world.spawn_lava(time, 600, 800, 1000, 2000, 0, false);
+                self.world.spawn_spawner(time,999, 2500, -6, 1000);
+            },
+            15 => { // spawn train;
+                self.world.spawn_spawner(time, 900, 1300, -2, 0);
+            },
+            16 => { // spawn train skinny attack width;
+                self.world.player_set_attack_width(32);
+                self.world.spawn_spawner(time, 900, 1800, -2, 0);
+            },
+            17 => { // evil fast split spawner
+                self.world.spawn_spawner(time, 550, 1500, -2, 0);
+                self.world.spawn_spawner(time, 550, 1500, 2, 0);
+            },
+            18 => { // split spawner with exit blocking lava
+                self.world.spawn_spawner(time, 500, 1200, -2, 0);
+                self.world.spawn_spawner(time, 500, 1200, 2, 0);
+                self.world.spawn_lava(time, 900, 950, 2200, 800, 2000, false);
+            },
             _ => {
                 self.level = 0;
                 self.build_level(time);

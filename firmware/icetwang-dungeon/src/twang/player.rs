@@ -28,6 +28,9 @@ use super::led_string::LEDString;
 use super::utils::range_map;
 use super::enemy::Enemy;
 
+const ATTACK_WIDTH: i32 = 70;
+const ATTACK_DURATION: u32 = 500;
+
 pub struct Player {
     pub position: i32,
     direction: i32,
@@ -43,10 +46,10 @@ impl Player {
         Self {
             position: 0,
             direction,
-            attack_width: 70,
+            attack_width: ATTACK_WIDTH,
             attacking: false,
             attacking_millis: 0,
-            attack_duration: 500,
+            attack_duration: ATTACK_DURATION,
             speed: 0,
         }
     }
@@ -142,5 +145,7 @@ impl Player {
 
     pub fn reset(&mut self) {
         self.position = 0;
+        self.attack_width = ATTACK_WIDTH;
+        self.attack_duration = ATTACK_DURATION;
     }
 }
