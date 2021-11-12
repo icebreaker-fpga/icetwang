@@ -154,7 +154,7 @@ fn real_main() -> ! {
         // Calculate elapsed and percentage of the frame time
         let time_elapsed = event_time - timer.value();
         let busy_percent = (time_elapsed * 100) / event_time;
-        print!(" {:03}% {:5} {:10}\r", busy_percent, time_elapsed, time);
+        print!(" {:03}% {:5} {:10}\x1b[0K\r", busy_percent, time_elapsed, time);
 
         // Wait for the timer to expire
         while !timer.ev_n() {

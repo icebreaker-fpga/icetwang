@@ -147,7 +147,7 @@ fn main() {
             if passed > 0.01 {
                 fps = (frames as f64) / passed;
                 status = format!("FPS: {:.2} TIM: {}", fps, time);
-                print!("FPS: {:.2} TIM: {:010} DIR: {}{}{}\r", fps, time, if left {"<"} else {" "}, if right {">"} else {" "}, if up {"^"} else {" "});
+                print!("FPS: {:.2} TIM: {:010} DIR: {}{}{}\x1b[0K\r", fps, time, if left {"<"} else {" "}, if right {">"} else {" "}, if up {"^"} else {" "});
                 let _ = stdout().flush();
                 frames = 0;
                 passed = 0.0;
