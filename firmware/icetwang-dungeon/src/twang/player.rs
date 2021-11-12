@@ -53,33 +53,35 @@ impl Player {
 
     pub fn draw(&self, led_string: &mut LEDString, time: u32) {
         if !self.attacking {
-            led_string[self.position as usize].set_rgb([0, 255, 0]);
+            let pos = led_string.vtor(self.position);
+            led_string[pos].set_rgb([0, 255, 0]);
         } else {
             self.draw_attack(led_string, time);
         }
     }
 
     fn draw_attack(&self, led_string: &mut LEDString, time: u32) {
+        // Fade value
         let mut n = range_map(time - self.attacking_millis, 0, self.attack_duration, 100, 5) as u8;
-        for i in (self.position - (self.attack_width / 2) + 1)..(self.position + (self.attack_width / 2)) {
-            if i >= 0 && i < led_string.len() as i32 {
-                led_string[i as usize].set_rgb([0, 0, n]);
+        // Draw blue attack bar
+        let from = led_string.vtor(self.position - (self.attack_width / 2)) + 1;
+        let to = led_string.vtor(self.position + (self.attack_width / 2));
+        for i in from..to {
+            if i >= 0 && i < led_string.len() {
+                led_string[i].set_rgb([0, 0, n]);
             }
         }
+        // Draw player as white at the beginning of the attack and then back to green
+        let pos = led_string.vtor(self.position);
         if n > 90 {
             n = 255;
-            led_string[self.position as usize].set_rgb([255, 255, 255]);
+            led_string[pos].set_rgb([255, 255, 255]);
         } else {
             n = 0;
-            led_string[self.position as usize].set_rgb([0, 255, 0]);
+            led_string[pos].set_rgb([0, 255, 0]);
         }
-        let hlf_att_wdth = self.attack_width / 2;
-        if self.position >= hlf_att_wdth {
-            led_string[(self.position - (self.attack_width / 2)) as usize].set_rgb([n, n, 255]);
-        }
-        if (self.position + hlf_att_wdth) < led_string.len() as i32 {
-            led_string[(self.position + (self.attack_width / 2)) as usize].set_rgb([n, n, 255]);
-        }
+        led_string[from - 1].set_rgb([n, n, 255]);
+        led_string[to].set_rgb([n, n, 255]);
     }
 
     pub fn tick(&mut self, led_string: &LEDString, time: u32) {
@@ -90,7 +92,7 @@ impl Player {
             return;
         }
         let amount = self.speed * self.direction;
-        let len = led_string.len() as i32;
+        let len = led_string.vlen();
         self.position += amount;
         if self.position < 0 {
             self.position = 0

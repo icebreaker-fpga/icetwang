@@ -48,7 +48,8 @@ impl Enemy {
 
     pub fn draw(&self, led_string: &mut LEDString) {
         if self.alive {
-            led_string[self.position as usize].set_rgb([255, 0, 0]);
+            let pos = led_string.vtor(self.position);
+            led_string[pos].set_rgb([255, 0, 0]);
         }
     }
 
@@ -60,7 +61,7 @@ impl Enemy {
             self.position = self.origin + ((sini8((((time / 37) as i32 * self.speed) & 0xFF) as i8) as i32) * self.wobble) / 255;
         } else {
             self.position += self.speed;
-            if self.position >= led_string.len() as i32 || self.position < 0 {
+            if self.position >= led_string.vlen() || self.position < 0 {
                 self.alive = false;
             }
         }

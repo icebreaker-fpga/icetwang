@@ -48,7 +48,8 @@ impl Spawner {
 
     pub fn draw(&self, led_string: &mut LEDString) {
         if self.alive {
-            led_string[self.position as usize].set_rgb([64, 0, 64]);
+            let pos = led_string.vtor(self.position);
+            led_string[pos].set_rgb([64, 0, 64]);
         }
     }
 

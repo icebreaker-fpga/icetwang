@@ -55,17 +55,19 @@ impl Lava {
         if !self.alive {
             return;
         }
+        let start = led_string.vtor(self.pos_start);
+        let end = led_string.vtor(self.pos_end);
         if !self.state { // Off state
-            for i in self.pos_start..self.pos_end {
+            for i in start..end {
                 let flicker = if (i % 3) == 0 {LAVA_OFF_BRIGHTNESS/2} else {LAVA_OFF_BRIGHTNESS};
-                led_string[i as usize].set_rgb([LAVA_OFF_BRIGHTNESS + flicker,(LAVA_OFF_BRIGHTNESS + flicker) * 3 / 2,0]);
+                led_string[i].set_rgb([LAVA_OFF_BRIGHTNESS + flicker,(LAVA_OFF_BRIGHTNESS + flicker) * 3 / 2,0]);
             }
         } else { // On state
-            for i in self.pos_start..self.pos_end {
+            for i in start..end {
                 if (i % 3) == 0 {
-                    led_string[i as usize].set_rgb([150, 0, 0]);
+                    led_string[i].set_rgb([150, 0, 0]);
                 } else {
-                    led_string[i as usize].set_rgb([180, 100, 0])
+                    led_string[i].set_rgb([180, 100, 0])
                 }
             }
         }

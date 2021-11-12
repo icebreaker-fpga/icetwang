@@ -102,7 +102,8 @@ impl World {
         // Player walks on everything
         self.player.draw(led_string, time);
         // Draw exit
-        led_string[999].set_rgb([0, 0, 255]);
+        let exit = led_string.len() - 1;
+        led_string[exit].set_rgb([0, 0, 255]);
     }
 
     pub fn player_set_speed(&mut self, val: i32) {

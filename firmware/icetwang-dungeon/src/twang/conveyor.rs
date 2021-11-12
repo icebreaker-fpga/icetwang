@@ -51,12 +51,14 @@ impl Conveyor {
         }
 
         let time = time + 10000;
-        for i in (self.pos_start..self.pos_end).step_by(5) {
-            let n = ((if self.speed >= 0 {-i/5} else {i/5} + (time as i32 / 100)) % 5) as u8;
+        let start = led_string.vtor(self.pos_start);
+        let end = led_string.vtor(self.pos_end);
+        for i in start..end {
+            let n = ((if self.speed >= 0 {-i} else {i} + (time as i32 / 100)) % 5) as u8;
             let b = range_map(n, 0, 5, 0, CONVEYOR_BRIGHTNESS);
             //print!("{} {} ", n, b);
             if b > 0 {
-                led_string[i as usize].set_rgb([0, 0, b]);
+                led_string[i].set_rgb([0, 0, b]);
             }
         }
     }

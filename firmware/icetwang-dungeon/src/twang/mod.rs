@@ -96,9 +96,9 @@ impl Twang {
             State::Starting {stage, start_time} => {
                 match stage {
                     StartStage::Wipeup => {
-                        let n = range_map(time - start_time, 0, STARTUP_WIPEUP_DUR, 0, self.led_string.len() as u32);
+                        let n = range_map(time - start_time, 0, STARTUP_WIPEUP_DUR, 0, self.led_string.len() as u32) as i32;
                         for i in 0..n {
-                            self.led_string[i as usize].set_rgb([0, 255, 0])
+                            self.led_string[i].set_rgb([0, 255, 0])
                         }
                         if time < (start_time + STARTUP_WIPEUP_DUR) {
                             State::Starting{stage: StartStage::Wipeup, start_time: start_time}
@@ -115,10 +115,10 @@ impl Twang {
                         }
                     },
                     StartStage::Fade => {
-                        let n = range_map(time - start_time, 0, STARTUP_FADE_DUR, 0, self.led_string.len() as u32);
+                        let n = range_map(time - start_time, 0, STARTUP_FADE_DUR, 0, self.led_string.len() as u32) as i32;
                         let brightness = range_map(time - start_time, 0, STARTUP_FADE_DUR, 255, 0) as u8;
-                        for i in n..self.led_string.len() as u32 {
-                            self.led_string[i as usize].set_rgb([0, brightness, 0]);
+                        for i in n..self.led_string.len() {
+                            self.led_string[i].set_rgb([0, brightness, 0]);
                         }
                         if time < (start_time + STARTUP_FADE_DUR) {
                             State::Starting{stage: StartStage::Fade, start_time: start_time}
@@ -167,13 +167,13 @@ impl Twang {
 
     }
 
-    pub fn get_raw_led(&mut self, i: usize) -> [u8; 3] {
-        let led = self.led_string.get_raw(i as usize);
+    pub fn get_led(&mut self, i: usize) -> [u8; 3] {
+        let led = self.led_string.get_raw(i as i32);
         [led.r, led.g, led.b]
     }
 
-    pub fn get_raw_led_len(&mut self) -> usize {
-        self.led_string.raw_len()
+    pub fn get_led_len(&mut self) -> usize {
+        self.led_string.len() as usize
     }
 
     fn build_level(&mut self, time: u32) {

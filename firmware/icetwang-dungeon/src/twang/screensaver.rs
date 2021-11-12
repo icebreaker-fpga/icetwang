@@ -68,18 +68,20 @@ impl Screensaver {
                 // Marching green <> orange
                 led_string.nscale8(250);
 
-                let n = ((time / 250) % 100) as usize;
+                let n = ((time / 250) % 10) as i32;
                 let c = 20 + (((sinu8(((time / 62) & 0xFF) as u8) as u32 * 66) / 255) % 255) as u8;
-                for i in (n..led_string.len()).step_by(100) {
-                    led_string[i].set_hsv(c, 255, 150);
+                for i in n..led_string.len() {
+                    if i % 10 == n {
+                        led_string[i].set_hsv(c, 255, 150);
+                    }
                 }
             },
             1 => {
                 // Random flashes
                 led_string.nscale8(250);
 
-                for i in (0..led_string.len()).step_by(5) {
-                    if (self.rand.next_u32() % 1000) == 0 {
+                for i in 0..led_string.len() {
+                    if (self.rand.next_u32() % 100) == 0 {
                         led_string[i].set_hsv(25, 255, 100)
                     }
                 }
@@ -92,8 +94,8 @@ impl Screensaver {
                     let mm = (i * DOT_DISTANCE) + time.wrapping_mul(DOTSPEED);
                     let mm16 = mm % (1 << 16); // Trim to 16bit
                     let mmf = (mm16 >> 8) & 0xFF; // map to 0 - 255 range
-                    let nsin = sinu8(mmf as u8) as u32;
-                    let n = 2 + ((led_string.len() as u32 - 5).wrapping_mul(nsin) / 255) as usize;
+                    let nsin = sinu8(mmf as u8) as i32;
+                    let n = 2 + ((led_string.len() - 5).wrapping_mul(nsin) / 255);
                     let c: u8 = (mm / 50 % 255) as u8;
                     // println!("i {} mm {:#010X} mm16 {:#06X} mmf {:.4} nsin {:2.4}, n {:03}, c {:#04X}", i, mm, mm16, mmf, nsin, n, c);
                     led_string[n - 2] += LED::new(hsv_rainbow(c, 255, DOT_BRIGHTNESS / 4));
@@ -115,7 +117,7 @@ impl Screensaver {
                     n = 1;
                 }
 
-                for i in (0..led_string.len()).step_by(6) {
+                for i in 0..led_string.len() {
                     let val: u8 = (self.rand.next_u32() & 0xFF) as u8;
                     if val <= (n as u8) {
                         led_string[i].set_rgb([100; 3]);
@@ -124,8 +126,8 @@ impl Screensaver {
             },
             5 => {
                 // Scroll dots
-                for i in (0..led_string.len()).step_by(6) {
-                    if ((i/6) + (time as usize / 100)) % 5 == 0 {
+                for i in 0..led_string.len() {
+                    if (i + (time as i32 / 100)) % 5 == 0 {
                         led_string[i].set_rgb([100; 3]);
                     } else {
                         led_string[i].set_rgb([0; 3]);

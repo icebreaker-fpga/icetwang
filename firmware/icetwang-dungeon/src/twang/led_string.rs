@@ -93,12 +93,18 @@ impl LEDString {
 		}
 	}
 
-    pub fn len(&self) -> usize {
-        LED_STRING_VLENGTH
+    pub fn len(&self) -> i32 {
+        LED_STRING_LENGTH as i32
     }
 
-    pub fn raw_len(&self) -> usize {
-        self.leds.len()
+    pub fn vlen(&self) -> i32 {
+        LED_STRING_VLENGTH as i32
+    }
+
+    /// Converts the virtual world coordinate to the physical coordinate.
+    pub fn vtor(& self, n: i32) -> i32 {
+        let n = if n >= LED_STRING_VLENGTH as i32 {LED_STRING_VLENGTH as i32 - 1} else {n};
+        range_map(n, 0, LED_STRING_VLENGTH as i32 - 1, 0, LED_STRING_LENGTH as i32 - 1)
     }
 
     pub fn clear(&mut self){
@@ -113,37 +119,33 @@ impl LEDString {
         }
     }
 
-    pub fn get_raw(&mut self, i: usize) -> &LED {
-        if i >= self.leds.len() {
+    pub fn get_raw(&mut self, i: i32) -> &LED {
+        if i < 0 || i >= LED_STRING_LENGTH as i32 {
             &self.null
         } else {
-            &self.leds[i]
+            &self.leds[i as usize]
         }
     }
 }
 
-impl Index<usize> for LEDString {
+impl Index<i32> for LEDString {
     type Output = LED;
 
-    fn index(&self, i: usize) -> &Self::Output {
-        let ri = range_map(i, 0, LED_STRING_VLENGTH, 0, LED_STRING_LENGTH);
-
-        if ri >= self.leds.len() {
+    fn index(&self, i: i32) -> &Self::Output {
+        if i < 0 || i >= LED_STRING_LENGTH as i32 {
             &self.null
         } else {
-            &self.leds[ri]
+            &self.leds[i as usize]
         }
     }
 }
 
-impl IndexMut<usize> for LEDString {
-    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
-        let ri = range_map(i, 0, LED_STRING_VLENGTH, 0, LED_STRING_LENGTH);
-
-        if ri >= self.leds.len() {
+impl IndexMut<i32> for LEDString {
+    fn index_mut(&mut self, i: i32) -> &mut Self::Output {
+        if i < 0 || i >= LED_STRING_LENGTH as i32 {
             &mut self.null
         } else {
-            &mut self.leds[ri]
+            &mut self.leds[i as usize]
         }
     }
 }

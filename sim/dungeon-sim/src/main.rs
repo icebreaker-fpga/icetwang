@@ -80,9 +80,9 @@ fn main() {
         if let Some(_) = event.render_args() {
             window.draw_2d(&event, |context, graphics, device| {
                 clear([0.33; 4], graphics);
-                let len = twang.get_raw_led_len();
+                let len = twang.get_led_len();
                 for i in 0..len {
-                    let led = twang.get_raw_led(i);
+                    let led = twang.get_led(i);
                     // convert to f32 and apply inverse gamma to match LEDs
                     let r = (led[0] as f32 / 255.0).powf(1.0/2.2);
                     let g = (led[1] as f32 / 255.0).powf(1.0/2.2);
