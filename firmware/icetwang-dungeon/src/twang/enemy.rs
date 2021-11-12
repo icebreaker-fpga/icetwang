@@ -42,7 +42,7 @@ impl Enemy {
             speed: 0,
             wobble: 0,
             alive: false,
-            player_side: 1,
+            player_side: 0,
         }
     }
 
@@ -69,6 +69,14 @@ impl Enemy {
 
     pub fn collide_player(&mut self, player: &Player) {
         if !self.alive {
+            return;
+        }
+        if self.player_side == 0 {
+            if self.position < player.position {
+                self.player_side = -1;
+            } else if self.position > player.position {
+                self.player_side = 1;
+            }
             return;
         }
         if player.attacking {
@@ -100,5 +108,6 @@ impl Enemy {
         self.origin = position;
         self.speed = speed;
         self.wobble = wobble;
+        self.player_side = 0;
     }
 }

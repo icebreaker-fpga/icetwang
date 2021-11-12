@@ -232,7 +232,7 @@ impl Twang {
                 self.world.spawn_enemy(700, 7, 275);
                 self.world.spawn_enemy(500, 5, 250);
                 self.world.spawn_spawner(time, 999, 5500, -4, 3000);
-                self.world.spawn_spawner(time, 0, 5500, -5, 10000);
+                self.world.spawn_spawner(time, 0, 5500, 5, 10000);
                 self.world.spawn_conveyor(100, 900, -4);
             },
             9 => { // Conveyor of enemies
