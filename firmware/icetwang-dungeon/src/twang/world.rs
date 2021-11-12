@@ -79,9 +79,6 @@ impl World {
         }
         for i in 0..self.conveyors.len() {
             self.player.collide_conveyor(&self.conveyors[i]);
-            for j in 0..self.enemies.len() {
-                self.enemies[j].collide_conveyor(&self.conveyors[i]);
-            }
         }
     }
 
