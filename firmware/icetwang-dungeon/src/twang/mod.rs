@@ -94,6 +94,7 @@ impl Twang {
                 }
             },
             State::Starting {stage, start_time} => {
+                self.led_string.clear();
                 match stage {
                     StartStage::Wipeup => {
                         let n = range_map(time - start_time, 0, STARTUP_WIPEUP_DUR, 0, self.led_string.len() as u32) as i32;
@@ -108,6 +109,9 @@ impl Twang {
                     },
                     StartStage::Sparkle => {
                         // we need rand to sparkle
+                        for i in 0..self.led_string.len() {
+                            self.led_string[i].set_rgb([0, 255, 0])
+                        }
                         if time < (start_time + STARTUP_SPARKLE_DUR) {
                             State::Starting{stage: StartStage::Sparkle, start_time: start_time}
                         } else {
@@ -117,6 +121,7 @@ impl Twang {
                     StartStage::Fade => {
                         let n = range_map(time - start_time, 0, STARTUP_FADE_DUR, 0, self.led_string.len() as u32) as i32;
                         let brightness = range_map(time - start_time, 0, STARTUP_FADE_DUR, 255, 0) as u8;
+                        //println!("st{} t{} td{} n{} b{}", start_time, time, time-start_time, n, brightness);
                         for i in n..self.led_string.len() {
                             self.led_string[i].set_rgb([0, brightness, 0]);
                         }
@@ -140,9 +145,9 @@ impl Twang {
                         self.world.player_attack(time);
                     }
                     self.world.player_set_speed(lr_input);
-                    self.led_string.clear();
                     self.world.tick(&mut self.led_string, time);
                     self.world.collide();
+                    self.led_string.clear();
                     self.world.draw(&mut self.led_string, time);
                 }
                 if lr_input == 0 && !fire_input {self.input_idle_time += 1;}
