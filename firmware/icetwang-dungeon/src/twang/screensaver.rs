@@ -26,36 +26,19 @@ use super::led_string::{LEDString, LED, hsv_rainbow};
 use super::utils::sinu8;
 #[cfg(feature = "icetwanghw")]
 use crate::print;
+use crate::twang::rand::{random8, random8lim};
 
 const DOTSPEED: u32 = 11;
 const DOTS_IN_BOWLS_COUNT: u32 = 3;
 const DOT_DISTANCE: u32 = 65535 / DOTS_IN_BOWLS_COUNT as u32;
 const DOT_BRIGHTNESS: u8 = 255;
 
-struct PRand {
-    seed: u32
-}
-
-impl PRand {
-    pub fn new(seed: u32) -> Self {
-        Self { seed }
-    }
-
-    pub fn next_u32(&mut self) -> u32 {
-        let a: u32 = 134775813;
-        let c: u32 = 1;
-        self.seed = a.wrapping_mul(self.seed).wrapping_add(c);
-        self.seed
-    }
-}
-
 pub struct Screensaver {
-    rand: PRand
 }
 
 impl Screensaver {
-    pub fn new(seed: u32) -> Self {
-        Self { rand: PRand::new(seed) }
+    pub fn new() -> Self {
+        Self {}
     }
 
     pub fn tick(&mut self, led_string: &mut LEDString, time: u32) {
@@ -81,7 +64,7 @@ impl Screensaver {
                 led_string.nscale8(250);
 
                 for i in 0..led_string.len() {
-                    if (self.rand.next_u32() % 100) == 0 {
+                    if random8lim(20) == 0 {
                         led_string[i].set_hsv(25, 255, 100)
                     }
                 }
@@ -109,7 +92,7 @@ impl Screensaver {
                 // Sparkles
                 led_string.nscale8(128);
 
-                let c = time % 800;
+                let c = (time % 800) as u8;
                 let n;
                 if c < 240 {
                     n = 121 - c / 2;
@@ -118,8 +101,7 @@ impl Screensaver {
                 }
 
                 for i in 0..led_string.len() {
-                    let val: u8 = (self.rand.next_u32() & 0xFF) as u8;
-                    if val <= (n as u8) {
+                    if random8() <= n {
                         led_string[i].set_rgb([100; 3]);
                     }
                 }

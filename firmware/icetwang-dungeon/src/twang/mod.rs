@@ -31,6 +31,7 @@ mod enemy;
 mod spawner;
 mod lava;
 mod conveyor;
+mod rand;
 
 use world::World;
 use led_string::LEDString;
@@ -73,7 +74,7 @@ impl Twang {
     pub fn new() -> Twang {
         Twang {
             led_string: LEDString::new(),
-            screensaver: screensaver::Screensaver::new(56143584),
+            screensaver: screensaver::Screensaver::new(),
             state: State::Screensaver,
             world: World::new(),
             input_idle_time: GAME_FPS * GAME_TIMEOUT,
