@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use super::led_string::LEDString;
+use super::{led_string::LEDString, rand::random8lim};
 
 const LAVA_OFF_BRIGHTNESS: u8 = 15;
 
@@ -59,12 +59,12 @@ impl Lava {
         let end = led_string.vtor(self.pos_end);
         if !self.state { // Off state
             for i in start..end {
-                let flicker = if (i % 3) == 0 {LAVA_OFF_BRIGHTNESS/2} else {LAVA_OFF_BRIGHTNESS};
+                let flicker = random8lim(LAVA_OFF_BRIGHTNESS);
                 led_string[i].set_rgb([LAVA_OFF_BRIGHTNESS + flicker,(LAVA_OFF_BRIGHTNESS + flicker) * 3 / 2,0]);
             }
         } else { // On state
             for i in start..end {
-                if (i % 3) == 0 {
+                if random8lim(30) < 29 {
                     led_string[i].set_rgb([150, 0, 0]);
                 } else {
                     led_string[i].set_rgb([180, 100, 0])
