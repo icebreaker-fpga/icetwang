@@ -35,6 +35,8 @@ mod rand;
 
 use world::World;
 use led_string::LEDString;
+use self::rand::random8lim;
+
 #[cfg(feature = "icetwanghw")]
 use super::print;
 use utils::range_map;
@@ -42,7 +44,7 @@ use utils::range_map;
 const GAME_FPS: u32 = 60;
 const GAME_TIMEOUT: u32 = 60;
 const STARTUP_WIPEUP_DUR: u32 = 200;
-const STARTUP_SPARKLE_DUR: u32 = 100;//1300; when we actually have sparcle this should be longer
+const STARTUP_SPARKLE_DUR: u32 = 1300;
 const STARTUP_FADE_DUR: u32 = 1500;
 
 #[derive(Clone, Copy)]
@@ -111,7 +113,12 @@ impl Twang {
                     StartStage::Sparkle => {
                         // we need rand to sparkle
                         for i in 0..self.led_string.len() {
-                            self.led_string[i].set_rgb([0, 255, 0])
+                            if random8lim(30) < 28 {
+                                self.led_string[i].set_rgb([0, 255, 0]);
+                            } else {
+                                let flicker = random8lim(250);
+                                self.led_string[i].set_rgb([flicker, 150, flicker]);
+                            }
                         }
                         if time < (start_time + STARTUP_SPARKLE_DUR) {
                             State::Starting{stage: StartStage::Sparkle, start_time: start_time}
