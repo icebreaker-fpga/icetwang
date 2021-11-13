@@ -77,7 +77,7 @@ impl Particle {
 
         // apply gravity if present
         if gravity && self.position > bend {
-            self.speed -= 10;
+            self.speed = self.speed.saturating_sub(10);
         }
 
         // decrement power based on life
@@ -107,6 +107,6 @@ impl Particle {
         self.speed = ((random8() as i32) - 128) as i8;
         self.power = 255;
         self.alive = true;
-        self.life = 220 - self.speed.abs() as u8;
+        self.life = 220 - (self.speed as i32).abs() as u8;
     }
 }
