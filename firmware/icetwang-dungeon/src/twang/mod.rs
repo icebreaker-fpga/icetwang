@@ -49,6 +49,8 @@ const STARTUP_SPARKLE_DUR: u32 = 1300;
 const STARTUP_FADE_DUR: u32 = 1500;
 const DEATH_EXPLOSION_DUR: u32 = 200;
 const DEATH_EXPLOSION_WIDTH: i32 = 10;
+const LIVES_DISPLAY_DUR: u32 = 1000;
+const PLAYER_DEFAULT_LIVES: u8 = 3;
 
 #[derive(Clone, Copy)]
 enum StartStage {
@@ -68,7 +70,7 @@ enum State {
     Starting{stage: StartStage, start_time: u32},
     Playing,
     Death{stage: DeathStage, start_time: u32},
-    Lives,
+    Lives{start_time: u32},
     Win,
 }
 
@@ -145,6 +147,7 @@ impl Twang {
                         if time < (start_time + STARTUP_FADE_DUR) {
                             State::Starting{stage: StartStage::Fade, start_time: start_time}
                         } else {
+                            self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
                             self.level = 0;
                             self.build_level(time);
                             State::Playing
@@ -202,19 +205,32 @@ impl Twang {
                         if self.world.cycle_particles(&mut self.led_string, true, 0) {
                             State::Death{stage: DeathStage::Particles, start_time: start_time}
                         } else {
-                            // Reset level and decrement lives here
-                            // if lives 0 return State::Starting
-                            State::Lives
+                            State::Lives{start_time: time}
                         }
                     }
                 }
             },
-            State::Lives => {
-                // Render lives
-                // Check if the player still has lives
-                // either rebuild level or reset to first level
-                self.build_level(time);
-                State::Playing
+            State::Lives{start_time} => {
+                if self.world.player_lives() == 0 {
+                    State::Starting{stage: StartStage::Wipeup, start_time: time}
+                } else {
+                    self.led_string.clear();
+                    // Render lives
+                    let mut pos = 0;
+                    for _ in 0..self.world.player_lives() {
+                        for _ in 0..4 {
+                            self.led_string[pos].set_rgb([0, 255, 0]);
+                            pos += 1;
+                        }
+                        pos += 1;
+                    }
+                    if time < (start_time + LIVES_DISPLAY_DUR) {
+                        State::Lives{start_time: start_time}
+                    } else {
+                        self.build_level(time);
+                        State::Playing
+                    }
+                }
             },
             State::Win => {
                 // Render winning animation here

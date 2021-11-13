@@ -39,6 +39,7 @@ pub struct Player {
     attacking_millis: u32,
     attack_duration: u32,
     pub speed: i32,
+    pub lives: u8,
     pub alive: bool,
 }
 
@@ -52,6 +53,7 @@ impl Player {
             attacking_millis: 0,
             attack_duration: ATTACK_DURATION,
             speed: 0,
+            lives: 0,
             alive: false,
         }
     }
@@ -143,6 +145,7 @@ impl Player {
     }
 
     pub fn die(&mut self) {
+        self.lives -= 1;
         self.alive = false;
     }
 

@@ -127,6 +127,14 @@ impl World {
         self.player.position
     }
 
+    pub fn player_lives(&mut self) -> u8 {
+        self.player.lives
+    }
+
+    pub fn player_set_lives(&mut self, lives: u8) {
+        self.player.lives = lives;
+    }
+
     pub fn reset(&mut self) {
         self.player.reset();
         for i in 0..self.enemies.len() {
