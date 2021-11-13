@@ -205,6 +205,9 @@ impl Twang {
                         if self.world.cycle_particles(&mut self.led_string, true, 0) {
                             State::Death{stage: DeathStage::Particles, start_time: start_time}
                         } else {
+                            if self.level == 0 {
+                                self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
+                            }
                             State::Lives{start_time: time}
                         }
                     }
