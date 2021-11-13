@@ -115,6 +115,14 @@ impl World {
         self.player.attack_width = width;
     }
 
+    pub fn player_alive(&mut self) -> bool {
+        self.player.alive
+    }
+
+    pub fn player_position(&mut self) -> i32 {
+        self.player.position
+    }
+
     pub fn reset(&mut self) {
         self.player.reset();
         for i in 0..self.enemies.len() {
@@ -129,6 +137,10 @@ impl World {
         for i in 0..self.conveyors.len() {
             self.conveyors[i].reset();
         }
+    }
+
+    pub fn spawn_player(&mut self, position: i32) {
+        self.player.spawn(position);
     }
 
     pub fn spawn_enemy(&mut self, position: i32, speed: i32, wobble: i32) {

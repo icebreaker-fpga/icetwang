@@ -39,13 +39,15 @@ use self::rand::random8lim;
 
 #[cfg(feature = "icetwanghw")]
 use super::print;
-use utils::range_map;
+use utils::{range_map, constrain};
 
 const GAME_FPS: u32 = 60;
 const GAME_TIMEOUT: u32 = 60;
 const STARTUP_WIPEUP_DUR: u32 = 200;
 const STARTUP_SPARKLE_DUR: u32 = 1300;
 const STARTUP_FADE_DUR: u32 = 1500;
+const DEATH_EXPLOSION_DUR: u32 = 200;
+const DEATH_EXPLOSION_WIDTH: i32 = 10;
 
 #[derive(Clone, Copy)]
 enum StartStage {
@@ -54,11 +56,17 @@ enum StartStage {
     Fade,
 }
 
+#[derive(Clone, Copy)]
+enum DeathStage {
+    Explosion,
+    Particles
+}
+
 enum State {
     Screensaver,
-    Starting{stage: StartStage, start_time: u32, },
+    Starting{stage: StartStage, start_time: u32},
     Playing,
-    Death,
+    Death{stage: DeathStage, start_time: u32},
     Lives,
     Win,
 }
@@ -160,16 +168,44 @@ impl Twang {
                 }
                 if lr_input == 0 && !fire_input {self.input_idle_time += 1;}
                 else {self.input_idle_time = 0;}
-                if self.input_idle_time >= (GAME_FPS * GAME_TIMEOUT) {State::Screensaver}
-                else {State::Playing}
+                if self.input_idle_time >= (GAME_FPS * GAME_TIMEOUT) {
+                    State::Screensaver
+                } else if !self.world.player_alive() {
+                    State::Death{stage: DeathStage::Explosion, start_time: time}
+                } else {
+                    State::Playing
+                }
             },
-            State::Death => {
-                // Reset level and decrement lives here
-                // if lives 0 return State::Starting
-                State::Lives
+            State::Death {stage, start_time} => {
+                self.led_string.clear();
+                // Death Animation
+                match stage {
+                    DeathStage::Explosion => {
+                        let brightness = range_map(time - start_time, 0, DEATH_EXPLOSION_DUR, 255, 50) as u8;
+                        let pos = self.led_string.vtor(self.world.player_position());
+                        let start = constrain(range_map((time - start_time) as i32, 0, DEATH_EXPLOSION_DUR as i32, pos, pos - DEATH_EXPLOSION_WIDTH), 0, self.led_string.len() - 1);
+                        let stop = constrain(range_map((time - start_time) as i32, 0, DEATH_EXPLOSION_DUR as i32, pos, pos + DEATH_EXPLOSION_WIDTH), 0, self.led_string.len() - 1);
+                        for i in start..stop {
+                            self.led_string[i].set_rgb([255, brightness, brightness]);
+                        }
+                        if time < (start_time + DEATH_EXPLOSION_DUR) {
+                            State::Death{stage: DeathStage::Explosion, start_time: start_time}
+                        } else {
+                            State::Death{stage: DeathStage::Particles, start_time: time}
+                        }
+                    },
+                    DeathStage::Particles => {
+                        // Reset level and decrement lives here
+                        // if lives 0 return State::Starting
+                        State::Lives
+                    }
+                }
             },
             State::Lives => {
                 // Render lives
+                // Check if the player still has lives
+                // either rebuild level or reset to first level
+                self.build_level(time);
                 State::Playing
             },
             State::Win => {
@@ -191,6 +227,15 @@ impl Twang {
 
     fn build_level(&mut self, time: u32) {
         self.world.reset();
+
+        // Only level 0 starts with the player at a different position than 0
+        if self.level == 0 {
+            self.world.spawn_player(200);
+        } else {
+            self.world.spawn_player(0);
+        }
+
+        // Setup the rest of the level
         match self.level {
             0 => { // One enemy, kill it
                 self.world.spawn_enemy(500, 0, 0);

@@ -39,6 +39,7 @@ pub struct Player {
     attacking_millis: u32,
     attack_duration: u32,
     pub speed: i32,
+    pub alive: bool,
 }
 
 impl Player {
@@ -51,10 +52,14 @@ impl Player {
             attacking_millis: 0,
             attack_duration: ATTACK_DURATION,
             speed: 0,
+            alive: false,
         }
     }
 
     pub fn draw(&self, led_string: &mut LEDString, time: u32) {
+        if !self.alive {
+            return;
+        }
         if !self.attacking {
             let pos = led_string.vtor(self.position);
             led_string[pos].set_rgb([0, 255, 0]);
@@ -88,6 +93,9 @@ impl Player {
     }
 
     pub fn tick(&mut self, led_string: &LEDString, time: u32) {
+        if !self.alive {
+            return;
+        }
         if self.attacking {
             if self.attacking_millis + self.attack_duration < time {
                 self.attacking = false;
@@ -135,7 +143,7 @@ impl Player {
     }
 
     pub fn die(&mut self) {
-        self.position = 0;
+        self.alive = false;
     }
 
     pub fn attack(&mut self, time: u32) {
@@ -147,5 +155,11 @@ impl Player {
         self.position = 0;
         self.attack_width = ATTACK_WIDTH;
         self.attack_duration = ATTACK_DURATION;
+        self.alive = false;
+    }
+
+    pub fn spawn(&mut self, position: i32) {
+        self.position = position;
+        self.alive = true;
     }
 }

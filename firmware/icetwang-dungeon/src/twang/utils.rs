@@ -52,6 +52,20 @@ where
         return (((i - imin) * ospan) / ispan) + omin;
     }
 }
+
+pub fn constrain<T>(i: T, min: T, max: T) -> T
+where
+    T: PartialOrd
+{
+    if i < min {
+        min
+    } else if i > max {
+        max
+    } else {
+        i
+    }
+}
+
 const SIN_LUT_SIZE: usize = 64;
 const SIN_LUT: [u8; SIN_LUT_SIZE as usize] = [
     0,0,0,0,1,1,1,2,
