@@ -32,6 +32,7 @@ mod spawner;
 mod lava;
 mod conveyor;
 mod rand;
+mod particle;
 
 use world::World;
 use led_string::LEDString;
@@ -171,6 +172,8 @@ impl Twang {
                 if self.input_idle_time >= (GAME_FPS * GAME_TIMEOUT) {
                     State::Screensaver
                 } else if !self.world.player_alive() {
+                    let pos = self.world.player_position();
+                    self.world.spawn_particles(pos);
                     State::Death{stage: DeathStage::Explosion, start_time: time}
                 } else {
                     State::Playing
@@ -181,6 +184,7 @@ impl Twang {
                 // Death Animation
                 match stage {
                     DeathStage::Explosion => {
+                        self.world.cycle_particles(&mut self.led_string, false, 0);
                         let brightness = range_map(time - start_time, 0, DEATH_EXPLOSION_DUR, 255, 50) as u8;
                         let pos = self.led_string.vtor(self.world.player_position());
                         let start = constrain(range_map((time - start_time) as i32, 0, DEATH_EXPLOSION_DUR as i32, pos, pos - DEATH_EXPLOSION_WIDTH), 0, self.led_string.len() - 1);
@@ -195,9 +199,13 @@ impl Twang {
                         }
                     },
                     DeathStage::Particles => {
-                        // Reset level and decrement lives here
-                        // if lives 0 return State::Starting
-                        State::Lives
+                        if self.world.cycle_particles(&mut self.led_string, true, 0) {
+                            State::Death{stage: DeathStage::Particles, start_time: start_time}
+                        } else {
+                            // Reset level and decrement lives here
+                            // if lives 0 return State::Starting
+                            State::Lives
+                        }
                     }
                 }
             },

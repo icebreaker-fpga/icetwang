@@ -23,16 +23,18 @@
  */
 
 use super::conveyor::Conveyor;
-use super::led_string::LEDString;
+use super::led_string::{self, LEDString};
 use super::enemy::Enemy;
 use super::spawner::Spawner;
 use super::lava::Lava;
 use super::player::Player;
+use super::particle::Particle;
 
 const ENEMY_POOL_COUNT: usize = 10;
 const SPAWNER_POOL_COUNT: usize = 2;
 const LAVA_POOL_COUNT: usize = 4;
 const CONVEYOR_POOL_COUNT: usize = 2;
+const PARTICLE_POOL_COUNT: usize = 40;
 
 pub struct World {
     player: Player,
@@ -40,6 +42,7 @@ pub struct World {
     spawners: [Spawner; SPAWNER_POOL_COUNT],
     lavas: [Lava; LAVA_POOL_COUNT],
     conveyors: [Conveyor; CONVEYOR_POOL_COUNT],
+    particles: [Particle; PARTICLE_POOL_COUNT],
 }
 
 impl World {
@@ -50,6 +53,7 @@ impl World {
             spawners: [Spawner::new(); SPAWNER_POOL_COUNT],
             lavas: [Lava::new(); LAVA_POOL_COUNT],
             conveyors: [Conveyor::new(); CONVEYOR_POOL_COUNT],
+            particles: [Particle::new(); PARTICLE_POOL_COUNT],
         }
     }
 
@@ -181,6 +185,24 @@ impl World {
                 return;
             }
         }
+    }
+
+    pub fn spawn_particles(&mut self, position: i32) {
+        for i in 0..self.particles.len() {
+            self.particles[i].spawn(position);
+        }
+    }
+
+    // Returns true if still active
+    pub fn cycle_particles(&mut self, led_string: &mut LEDString, gravity: bool, bend: i32) -> bool {
+        let mut active = false;
+        for i in 0..self.particles.len() {
+            self.particles[i].tick(gravity, bend);
+            if self.particles[i].draw(led_string) {
+                active = true;
+            }
+        }
+        active
     }
 
     pub fn exit_n(&self) -> bool {
