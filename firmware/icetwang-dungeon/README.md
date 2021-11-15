@@ -1,4 +1,4 @@
-Welcome to the Rust TWANG dungeon game for iCETWANG hardware.
+Welcome to the Rust TWANG dungeon game for iCEtwang hardware.
 
 ## Prerequisites
 

@@ -4,11 +4,11 @@ This repository contains hardware, gateware and firmware for the system.
 
 # What is it
 
-The original intention was to implement a TWANG inspired game, using FPGA
-instead of microcontrollers. The original was
-inspired by the game called Line Wobbler.
+The original intention was to implement a [TWANG](https://www.buildlog.net/blog/2018/01/twang/)
+inspired game, using FPGA instead of a microcontroller. In turn TWANG was inspired by the game
+called [Line Wobbler](https://wobblylabs.com/projects/wobbler).
 
-The scope of the project has shifted a bit since it's inception. The added
+The scope of the project has expanded a bit since it's inception. The added
 goals are multiplayer and remote LED strings, as well as additional games
 beyond the 1D Dungeon game that the predecessor TWANG game implemented.
 
