@@ -36,10 +36,11 @@ mod particle;
 
 use world::World;
 use led_string::LEDString;
+
 use self::rand::random8lim;
 
 #[cfg(feature = "icetwanghw")]
-use super::print;
+use super::{print, println};
 use utils::{range_map, constrain};
 
 const GAME_FPS: u32 = 60;
@@ -51,6 +52,8 @@ const DEATH_EXPLOSION_DUR: u32 = 200;
 const DEATH_EXPLOSION_WIDTH: i32 = 10;
 const LIVES_DISPLAY_DUR: u32 = 1000;
 const PLAYER_DEFAULT_LIVES: u8 = 3;
+const GAMEOVER_SPREAD_DUR: u32 = 1000;
+const GAMEOVER_FADE_DUR: u32 = 1500;
 
 #[derive(Clone, Copy)]
 enum StartStage {
@@ -65,12 +68,19 @@ enum DeathStage {
     Particles
 }
 
+#[derive(Clone, Copy)]
+enum GameOverStage {
+    Spread,
+    Fade
+}
+
 enum State {
     Screensaver,
     Starting{stage: StartStage, start_time: u32},
     Playing,
     Death{stage: DeathStage, start_time: u32},
     Lives{start_time: u32},
+    GameOver{stage: GameOverStage, start_time: u32},
     Win,
 }
 
@@ -215,7 +225,8 @@ impl Twang {
             },
             State::Lives{start_time} => {
                 if self.world.player_lives() == 0 {
-                    State::Starting{stage: StartStage::Wipeup, start_time: time}
+                    //State::Starting{stage: StartStage::Wipeup, start_time: time}
+                    State::GameOver{stage: GameOverStage::Spread, start_time: time}
                 } else {
                     self.led_string.clear();
                     // Render lives
@@ -232,6 +243,40 @@ impl Twang {
                     } else {
                         self.build_level(time);
                         State::Playing
+                    }
+                }
+            },
+            State::GameOver{stage, start_time} => {
+                self.led_string.clear();
+                match stage {
+                    GameOverStage::Spread => {
+                        let pos = self.led_string.vtor(self.world.player_position());
+                        let start = range_map((time - start_time) as i32, 0, GAMEOVER_SPREAD_DUR as i32, pos, 0);
+                        let stop = range_map((time - start_time) as i32, 0, GAMEOVER_SPREAD_DUR as i32, pos, self.led_string.len() - 1);
+                        //println!("t{} d{} p{} strt{} stop{} ", (time - start_time) as i32, GAMEOVER_SPREAD_DUR as i32, pos, start, stop);
+                        for i in start..stop {
+                            self.led_string[i].set_rgb([255, 0, 0]);
+                        }
+                        if time < (start_time + GAMEOVER_SPREAD_DUR) {
+                            State::GameOver{stage: GameOverStage::Spread, start_time: start_time}
+                        } else {
+                            State::GameOver{stage: GameOverStage::Fade, start_time: time}
+                        }
+                    },
+                    GameOverStage::Fade => {
+                        let stop = range_map((time - start_time) as i32, GAMEOVER_FADE_DUR as i32, 0, 0, self.led_string.len() - 1).max(0);
+                        let brightness = range_map(time - start_time, 0, GAMEOVER_FADE_DUR, 255, 0) as u8;
+                        for i in 0..stop {
+                            self.led_string[i].set_rgb([brightness, 0, 0]);
+                        }
+                        if time < (start_time + GAMEOVER_FADE_DUR) {
+                            State::GameOver{stage: GameOverStage::Fade, start_time: start_time}
+                        } else {
+                            self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
+                            self.level = 0;
+                            self.build_level(time);
+                            State::Playing
+                        }
                     }
                 }
             },
