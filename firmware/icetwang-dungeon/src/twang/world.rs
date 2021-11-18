@@ -150,6 +150,10 @@ impl World {
         self.player.lives = lives;
     }
 
+    pub fn boss_killed(&self) -> bool {
+        !self.boss.alive && self.boss.defeated
+    }
+
     pub fn reset(&mut self) {
         self.player.reset();
         for i in 0..self.enemies.len() {

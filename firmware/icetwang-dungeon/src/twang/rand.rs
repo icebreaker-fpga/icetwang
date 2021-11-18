@@ -25,17 +25,23 @@
 /* This is based on the FastLED random8 implementation */
 
 #[allow(dead_code)]
-static mut RAND8SEED: u16 = 1337;
+static mut RAND16SEED: u16 = 1337;
 
+#[allow(dead_code)]
+pub fn random16() -> u16 {
+    unsafe {
+        RAND16SEED = (RAND16SEED.wrapping_mul(2053)).wrapping_add(13849);
+        RAND16SEED
+    }
+}
 
 #[allow(dead_code)]
 pub fn random8() -> u8 {
     unsafe {
-        RAND8SEED = (RAND8SEED.wrapping_mul(2053)).wrapping_add(13849);
-        ((RAND8SEED & 0xFF) as u8).wrapping_add((RAND8SEED >> 8) as u8)
+        RAND16SEED = (RAND16SEED.wrapping_mul(2053)).wrapping_add(13849);
+        ((RAND16SEED & 0xFF) as u8).wrapping_add((RAND16SEED >> 8) as u8)
     }
 }
-
 
 #[allow(dead_code)]
 pub fn random8lim(lim: u8) -> u8 {
@@ -47,4 +53,16 @@ pub fn random8lim(lim: u8) -> u8 {
 pub fn random8minlim(min: u8, lim: u8) -> u8 {
     let delta = lim.wrapping_sub(min);
     random8lim(delta).wrapping_add(min)
+}
+
+#[allow(dead_code)]
+pub fn random16lim(lim: u16) -> u16 {
+    let r = random16();
+    (((r as u32 * lim as u32) >> 16) & 0xFFFF) as u16
+}
+
+#[allow(dead_code)]
+pub fn random16minlim(min: u16, lim: u16) -> u16 {
+    let delta = lim.wrapping_sub(min);
+    random16lim(delta).wrapping_add(min)
 }

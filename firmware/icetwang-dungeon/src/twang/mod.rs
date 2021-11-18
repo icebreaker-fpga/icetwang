@@ -38,7 +38,7 @@ mod boss;
 use world::World;
 use led_string::LEDString;
 
-use self::rand::random8lim;
+use self::{rand::{random16lim, random8, random8lim}, utils::sinu8};
 
 #[cfg(feature = "icetwanghw")]
 use super::print;
@@ -57,6 +57,8 @@ const GAMEOVER_FADE_DUR: u32 = 1500;
 const WIN_FILL_DUR: u32 = 500;
 const WIN_CLEAR_DUR: u32 = 1000;
 const WIN_OFF_DUR: u32 = 1200;
+const BOSSKILLED_RAINBOW_DUR: u32 = 7500;
+const BOSSKILLED_WIPE_DUR: u32 = 1000;
 
 #[derive(Clone, Copy)]
 enum StartStage {
@@ -84,6 +86,12 @@ enum WinStage {
     Off,
 }
 
+#[derive(Clone, Copy)]
+enum BossKilledStage {
+    Rainbow{hue: u8},
+    Wipe,
+}
+
 enum State {
     Screensaver,
     Starting{stage: StartStage, start_time: u32},
@@ -92,6 +100,7 @@ enum State {
     Lives{level: u32, start_time: u32},
     GameOver{stage: GameOverStage, start_time: u32},
     Win{level: u32, stage: WinStage, start_time: u32},
+    BossKilled{stage: BossKilledStage, start_time: u32},
 }
 
 pub struct Twang {
@@ -190,6 +199,8 @@ impl Twang {
                     State::Death{level, stage: DeathStage::Explosion, start_time: time}
                 } else if self.world.exit_n() {
                     State::Win{level, stage: WinStage::Fill, start_time: time}
+                } else if self.world.boss_killed() {
+                    State::BossKilled{stage: BossKilledStage::Rainbow{hue: 0}, start_time: time}
                 } else if lr_input == 0 && !fire_input {
                     State::Playing{level, timeout}
                 } else {
@@ -315,6 +326,40 @@ impl Twang {
                         } else {
                             self.build_level(level + 1, time);
                             State::Playing{level: level + 1, timeout: time}
+                        }
+                    }
+                }
+            },
+            State::BossKilled{stage, start_time} => {
+                self.led_string.clear();
+                match stage {
+                    BossKilledStage::Rainbow{hue} => {
+                        let mut h = hue;
+                        for i in 0..self.led_string.len() {
+                            self.led_string[i].set_hsv(h, 240, 255);
+                            h += 7;
+                        }
+                        if random8() < 200 {
+                            let pos = random16lim(self.led_string.len() as u16) as i32;
+                            self.led_string[pos].set_rgb([255, 255, 255]);
+                        }
+                        if time < (start_time + BOSSKILLED_RAINBOW_DUR) {
+                            State::BossKilled{stage: BossKilledStage::Rainbow{hue: hue + 1}, start_time}
+                        } else {
+                            State::BossKilled{stage: BossKilledStage::Wipe, start_time: time}
+                        }
+                    },
+                    BossKilledStage::Wipe => {
+                        let n = range_map((time - start_time) as i32, 0, BOSSKILLED_WIPE_DUR as i32, self.led_string.len(), 0);
+                        for i in 0..n {
+                            let h = sinu8((i.wrapping_mul(10).wrapping_add(time as i32).wrapping_mul(500/255) % 0xFF) as u8) + 1;
+                            self.led_string[i].set_hsv(h, 255, 50);
+                        }
+                        if time < (start_time + BOSSKILLED_WIPE_DUR) {
+                            State::BossKilled{stage, start_time}
+                        } else {
+                            self.build_level(0, time);
+                            State::Playing{level: 0, timeout: time}
                         }
                     }
                 }
