@@ -54,6 +54,9 @@ const LIVES_DISPLAY_DUR: u32 = 1000;
 const PLAYER_DEFAULT_LIVES: u8 = 3;
 const GAMEOVER_SPREAD_DUR: u32 = 1000;
 const GAMEOVER_FADE_DUR: u32 = 1500;
+const WIN_FILL_DUR: u32 = 500;
+const WIN_CLEAR_DUR: u32 = 1000;
+const WIN_OFF_DUR: u32 = 1200;
 
 #[derive(Clone, Copy)]
 enum StartStage {
@@ -74,6 +77,13 @@ enum GameOverStage {
     Fade
 }
 
+#[derive(Clone, Copy)]
+enum WinStage {
+    Fill,
+    Clear,
+    Off,
+}
+
 enum State {
     Screensaver,
     Starting{stage: StartStage, start_time: u32},
@@ -81,7 +91,7 @@ enum State {
     Death{level: u32, stage: DeathStage, start_time: u32},
     Lives{level: u32, start_time: u32},
     GameOver{stage: GameOverStage, start_time: u32},
-    Win,
+    Win{level: u32, stage: WinStage, start_time: u32},
 }
 
 pub struct Twang {
@@ -179,8 +189,7 @@ impl Twang {
                     self.world.spawn_particles(pos);
                     State::Death{level, stage: DeathStage::Explosion, start_time: time}
                 } else if self.world.exit_n() {
-                    self.build_level(level + 1, time);
-                    State::Playing{level: level + 1, timeout: time}
+                    State::Win{level, stage: WinStage::Fill, start_time: time}
                 } else if lr_input == 0 && !fire_input {
                     State::Playing{level, timeout}
                 } else {
@@ -274,9 +283,41 @@ impl Twang {
                     }
                 }
             },
-            State::Win => {
-                // Render winning animation here
-                State::Starting{stage: StartStage::Wipeup, start_time: time}
+            State::Win{level, stage, start_time} => {
+                self.led_string.clear();
+                match stage {
+                    WinStage::Fill => {
+                        let n = range_map((time - start_time) as i32, 0, WIN_FILL_DUR as i32, self.led_string.len(), 0);
+                        for i in n..self.led_string.len() {
+                            self.led_string[i].set_rgb([0, 255, 0]);
+                        }
+                        if time < (start_time + WIN_FILL_DUR) {
+                            State::Win{level, stage, start_time}
+                        } else {
+                            State::Win{level, stage: WinStage::Clear, start_time: time}
+                        }
+                    },
+                    WinStage::Clear => {
+                        let n = range_map((time - start_time) as i32, 0, WIN_CLEAR_DUR as i32, self.led_string.len(), 0);
+                        for i in 0..n {
+                            self.led_string[i].set_rgb([0, 255, 0]);
+                        }
+                        if time < (start_time + WIN_CLEAR_DUR) {
+                            State::Win{level, stage, start_time}
+                        } else {
+                            State::Win{level, stage: WinStage::Off, start_time: time}
+                        }
+                    },
+                    WinStage::Off => {
+                        self.led_string[0].set_rgb([0, 255, 0]);
+                        if time < (start_time + WIN_OFF_DUR) {
+                            State::Win{level, stage, start_time}
+                        } else {
+                            self.build_level(level + 1, time);
+                            State::Playing{level: level + 1, timeout: time}
+                        }
+                    }
+                }
             }
         };
 
