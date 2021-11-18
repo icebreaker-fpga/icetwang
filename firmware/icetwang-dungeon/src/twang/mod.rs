@@ -33,6 +33,7 @@ mod lava;
 mod conveyor;
 mod rand;
 mod particle;
+mod boss;
 
 use world::World;
 use led_string::LEDString;
@@ -166,7 +167,7 @@ impl Twang {
                 }
                 self.world.player_set_speed(lr_input);
                 self.world.tick(&mut self.led_string, time);
-                self.world.collide();
+                self.world.collide(time);
                 self.led_string.clear();
                 self.world.draw(&mut self.led_string, time);
 
@@ -401,6 +402,9 @@ impl Twang {
                 self.world.spawn_spawner(time, 500, 1200, -2, 0);
                 self.world.spawn_spawner(time, 500, 1200, 2, 0);
                 self.world.spawn_lava(time, 900, 950, 2200, 800, 2000, false);
+            },
+            19 => {
+                self.world.spawn_boss(time, [600, 200, 800], [1000, 1600, 1800]);
             },
             _ => {
                 panic!("Trying to build invalid level {}.", level);

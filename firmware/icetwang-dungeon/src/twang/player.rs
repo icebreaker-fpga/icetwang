@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use super::boss::Boss;
 use super::conveyor::Conveyor;
 use super::lava::Lava;
 use super::led_string::LEDString;
@@ -141,6 +142,16 @@ impl Player {
         if (self.position >= conveyor.pos_start) &&
             (self.position < conveyor.pos_end) {
                 self.position += conveyor.speed;
+        }
+    }
+
+    pub fn collide_boss(&mut self, boss: &Boss) {
+        if !boss.alive {
+            return;
+        }
+        if (self.position > boss.start) &&
+        (self.position < boss.stop) {
+            self.die();
         }
     }
 

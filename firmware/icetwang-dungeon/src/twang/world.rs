@@ -29,6 +29,7 @@ use super::spawner::Spawner;
 use super::lava::Lava;
 use super::player::Player;
 use super::particle::Particle;
+use super::boss::Boss;
 
 const ENEMY_POOL_COUNT: usize = 10;
 const SPAWNER_POOL_COUNT: usize = 2;
@@ -43,6 +44,7 @@ pub struct World {
     lavas: [Lava; LAVA_POOL_COUNT],
     conveyors: [Conveyor; CONVEYOR_POOL_COUNT],
     particles: [Particle; PARTICLE_POOL_COUNT],
+    boss: Boss,
 }
 
 impl World {
@@ -54,6 +56,7 @@ impl World {
             lavas: [Lava::new(); LAVA_POOL_COUNT],
             conveyors: [Conveyor::new(); CONVEYOR_POOL_COUNT],
             particles: [Particle::new(); PARTICLE_POOL_COUNT],
+            boss: Boss::new(),
         }
     }
 
@@ -70,7 +73,7 @@ impl World {
         }
     }
 
-    pub fn collide(&mut self) {
+    pub fn collide(&mut self, time: u32) {
         for i in 0..self.enemies.len() {
             self.player.collide_enemy(&self.enemies[i]);
             self.enemies[i].collide_player(&self.player);
@@ -84,27 +87,39 @@ impl World {
         for i in 0..self.conveyors.len() {
             self.player.collide_conveyor(&self.conveyors[i]);
         }
+        self.boss.collide_player(&self.player, &mut self.spawners, time);
+        self.player.collide_boss(&self.boss);
     }
 
     pub fn draw(&self, led_string: &mut LEDString, time: u32) {
         for i in 0..self.spawners.len() {
             self.spawners[i].draw(led_string);
         }
+
         for i in 0..self.lavas.len() {
             self.lavas[i].draw(led_string);
         }
+
         for i in 0..self.conveyors.len() {
             self.conveyors[i].draw(led_string, time);
         }
+
+        self.boss.draw(led_string);
+
         // Enemies walk on conveyors and other stuff
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(led_string);
         }
+
         // Player walks on everything
         self.player.draw(led_string, time);
+
         // Draw exit
-        let exit = led_string.len() - 1;
-        led_string[exit].set_rgb([0, 0, 255]);
+        // You can't escape the boss so there is no exit ;)
+        if !self.boss.alive {
+            let exit = led_string.len() - 1;
+            led_string[exit].set_rgb([0, 0, 255]);
+        }
     }
 
     pub fn player_set_speed(&mut self, val: i32) {
@@ -149,6 +164,7 @@ impl World {
         for i in 0..self.conveyors.len() {
             self.conveyors[i].reset();
         }
+        self.boss.reset();
     }
 
     pub fn spawn_player(&mut self, position: i32) {
@@ -199,6 +215,10 @@ impl World {
         for i in 0..self.particles.len() {
             self.particles[i].spawn(position);
         }
+    }
+
+    pub fn spawn_boss(&mut self, time: u32, positions: [i32; 3], spawn_rates: [u32; 3]) {
+        self.boss.spawn(time, positions, spawn_rates, &mut self.spawners);
     }
 
     // Returns true if still active
