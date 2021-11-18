@@ -23,7 +23,7 @@
  */
 
 use super::conveyor::Conveyor;
-use super::led_string::{self, LEDString};
+use super::led_string::LEDString;
 use super::enemy::Enemy;
 use super::spawner::Spawner;
 use super::lava::Lava;
