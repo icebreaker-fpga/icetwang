@@ -403,7 +403,7 @@ impl Twang {
                 self.world.spawn_lava(time, 900, 950, 2200, 800, 2000, false);
             },
             _ => {
-                // We should return an error here
+                panic!("Trying to build invalid level {}.", level);
             }
         }
     }
