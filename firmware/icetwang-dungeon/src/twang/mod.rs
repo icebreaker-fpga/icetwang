@@ -43,8 +43,7 @@ use self::rand::random8lim;
 use super::print;
 use utils::{range_map, constrain};
 
-const GAME_FPS: u32 = 60;
-const GAME_TIMEOUT: u32 = 60;
+const GAME_TIMEOUT: u32 = 60000;
 const STARTUP_WIPEUP_DUR: u32 = 200;
 const STARTUP_SPARKLE_DUR: u32 = 1300;
 const STARTUP_FADE_DUR: u32 = 1500;
@@ -77,9 +76,9 @@ enum GameOverStage {
 enum State {
     Screensaver,
     Starting{stage: StartStage, start_time: u32},
-    Playing,
-    Death{stage: DeathStage, start_time: u32},
-    Lives{start_time: u32},
+    Playing{level: u32, timeout: u32},
+    Death{level: u32, stage: DeathStage, start_time: u32},
+    Lives{level: u32, start_time: u32},
     GameOver{stage: GameOverStage, start_time: u32},
     Win,
 }
@@ -89,8 +88,6 @@ pub struct Twang {
     screensaver: screensaver::Screensaver,
     state: State,
     world: World,
-    input_idle_time: u32,
-    level: u32,
 }
 
 impl Twang {
@@ -100,8 +97,6 @@ impl Twang {
             screensaver: screensaver::Screensaver::new(),
             state: State::Screensaver,
             world: World::new(),
-            input_idle_time: GAME_FPS * GAME_TIMEOUT,
-            level: 0,
         }
     }
 
@@ -111,7 +106,6 @@ impl Twang {
             State::Screensaver => {
                 self.screensaver.tick(&mut self.led_string, time);
                 if lr_input != 0 || fire_input {
-                    self.input_idle_time = 0;
                     State::Starting{stage: StartStage::Wipeup, start_time: time}
                 } else {
                     State::Screensaver
@@ -158,41 +152,41 @@ impl Twang {
                             State::Starting{stage: StartStage::Fade, start_time}
                         } else {
                             self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
-                            self.level = 0;
-                            self.build_level(time);
-                            State::Playing
+                            self.build_level(0, time);
+                            State::Playing{level: 0, timeout: time}
                         }
                     }
                 }
             },
-            State::Playing => {
-                print!("LVL {} ", self.level);
-                if self.world.exit_n() {
-                    self.level += 1;
-                    self.build_level(time)
-                } else {
-                    if fire_input {
-                        self.world.player_attack(time);
-                    }
-                    self.world.player_set_speed(lr_input);
-                    self.world.tick(&mut self.led_string, time);
-                    self.world.collide();
-                    self.led_string.clear();
-                    self.world.draw(&mut self.led_string, time);
+            State::Playing{level, timeout} => {
+                print!("LVL {} ", level);
+
+                if fire_input {
+                    self.world.player_attack(time);
                 }
-                if lr_input == 0 && !fire_input {self.input_idle_time += 1;}
-                else {self.input_idle_time = 0;}
-                if self.input_idle_time >= (GAME_FPS * GAME_TIMEOUT) {
+                self.world.player_set_speed(lr_input);
+                self.world.tick(&mut self.led_string, time);
+                self.world.collide();
+                self.led_string.clear();
+                self.world.draw(&mut self.led_string, time);
+
+                // Decide state transition
+                if (time - timeout) > GAME_TIMEOUT {
                     State::Screensaver
                 } else if !self.world.player_alive() {
                     let pos = self.world.player_position();
                     self.world.spawn_particles(pos);
-                    State::Death{stage: DeathStage::Explosion, start_time: time}
+                    State::Death{level, stage: DeathStage::Explosion, start_time: time}
+                } else if self.world.exit_n() {
+                    self.build_level(level + 1, time);
+                    State::Playing{level: level + 1, timeout: time}
+                } else if lr_input == 0 && !fire_input {
+                    State::Playing{level, timeout}
                 } else {
-                    State::Playing
+                    State::Playing{level, timeout: time}
                 }
             },
-            State::Death {stage, start_time} => {
+            State::Death {level, stage, start_time} => {
                 self.led_string.clear();
                 // Death Animation
                 match stage {
@@ -206,24 +200,24 @@ impl Twang {
                             self.led_string[i].set_rgb([255, brightness, brightness]);
                         }
                         if time < (start_time + DEATH_EXPLOSION_DUR) {
-                            State::Death{stage: DeathStage::Explosion, start_time}
+                            State::Death{level, stage: DeathStage::Explosion, start_time}
                         } else {
-                            State::Death{stage: DeathStage::Particles, start_time: time}
+                            State::Death{level, stage: DeathStage::Particles, start_time: time}
                         }
                     },
                     DeathStage::Particles => {
                         if self.world.cycle_particles(&mut self.led_string, true, 0) {
-                            State::Death{stage: DeathStage::Particles, start_time}
+                            State::Death{level, stage: DeathStage::Particles, start_time}
                         } else {
-                            if self.level == 0 {
+                            if level == 0 {
                                 self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
                             }
-                            State::Lives{start_time: time}
+                            State::Lives{level, start_time: time}
                         }
                     }
                 }
             },
-            State::Lives{start_time} => {
+            State::Lives{level, start_time} => {
                 if self.world.player_lives() == 0 {
                     //State::Starting{stage: StartStage::Wipeup, start_time: time}
                     State::GameOver{stage: GameOverStage::Spread, start_time: time}
@@ -239,10 +233,10 @@ impl Twang {
                         pos += 1;
                     }
                     if time < (start_time + LIVES_DISPLAY_DUR) {
-                        State::Lives{start_time}
+                        State::Lives{level, start_time}
                     } else {
-                        self.build_level(time);
-                        State::Playing
+                        self.build_level(level, time);
+                        State::Playing{level: level, timeout: time}
                     }
                 }
             },
@@ -273,9 +267,8 @@ impl Twang {
                             State::GameOver{stage: GameOverStage::Fade, start_time}
                         } else {
                             self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
-                            self.level = 0;
-                            self.build_level(time);
-                            State::Playing
+                            self.build_level(0, time);
+                            State::Playing{level: 0, timeout: time}
                         }
                     }
                 }
@@ -297,18 +290,18 @@ impl Twang {
         self.led_string.len() as usize
     }
 
-    fn build_level(&mut self, time: u32) {
+    fn build_level(&mut self, level: u32, time: u32) {
         self.world.reset();
 
         // Only level 0 starts with the player at a different position than 0
-        if self.level == 0 {
+        if level == 0 {
             self.world.spawn_player(200);
         } else {
             self.world.spawn_player(0);
         }
 
         // Setup the rest of the level
-        match self.level {
+        match level {
             0 => { // One enemy, kill it
                 self.world.spawn_enemy(500, 0, 0);
             },
@@ -410,8 +403,7 @@ impl Twang {
                 self.world.spawn_lava(time, 900, 950, 2200, 800, 2000, false);
             },
             _ => {
-                self.level = 0;
-                self.build_level(time);
+                // We should return an error here
             }
         }
     }
