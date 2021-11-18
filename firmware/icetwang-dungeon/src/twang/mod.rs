@@ -24,7 +24,7 @@
 
 mod led_string;
 mod utils;
-mod screensaver;
+mod attract;
 mod world;
 mod player;
 mod enemy;
@@ -86,7 +86,7 @@ enum State {
 
 pub struct Twang {
     led_string: LEDString,
-    screensaver: screensaver::Screensaver,
+    screensaver: attract::Attract,
     state: State,
     world: World,
 }
@@ -95,7 +95,7 @@ impl Twang {
     pub fn new() -> Twang {
         Twang {
             led_string: LEDString::new(),
-            screensaver: screensaver::Screensaver::new(),
+            screensaver: attract::Attract::new(),
             state: State::Screensaver,
             world: World::new(),
         }

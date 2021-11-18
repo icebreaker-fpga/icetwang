@@ -33,10 +33,10 @@ const DOTS_IN_BOWLS_COUNT: u32 = 3;
 const DOT_DISTANCE: u32 = 65535 / DOTS_IN_BOWLS_COUNT as u32;
 const DOT_BRIGHTNESS: u8 = 255;
 
-pub struct Screensaver {
+pub struct Attract {
 }
 
-impl Screensaver {
+impl Attract {
     pub fn new() -> Self {
         Self {}
     }
