@@ -121,7 +121,7 @@ impl Twang {
                             self.led_string[i].set_rgb([0, 255, 0])
                         }
                         if time < (start_time + STARTUP_WIPEUP_DUR) {
-                            State::Starting{stage: StartStage::Wipeup, start_time}
+                            State::Starting{stage, start_time}
                         } else {
                             State::Starting{stage: StartStage::Sparkle, start_time: time}
                         }
@@ -137,7 +137,7 @@ impl Twang {
                             }
                         }
                         if time < (start_time + STARTUP_SPARKLE_DUR) {
-                            State::Starting{stage: StartStage::Sparkle, start_time}
+                            State::Starting{stage, start_time}
                         } else {
                             State::Starting{stage: StartStage::Fade, start_time: time}
                         }
@@ -150,7 +150,7 @@ impl Twang {
                             self.led_string[i].set_rgb([0, brightness, 0]);
                         }
                         if time < (start_time + STARTUP_FADE_DUR) {
-                            State::Starting{stage: StartStage::Fade, start_time}
+                            State::Starting{stage, start_time}
                         } else {
                             self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
                             self.build_level(0, time);
@@ -201,14 +201,14 @@ impl Twang {
                             self.led_string[i].set_rgb([255, brightness, brightness]);
                         }
                         if time < (start_time + DEATH_EXPLOSION_DUR) {
-                            State::Death{level, stage: DeathStage::Explosion, start_time}
+                            State::Death{level, stage, start_time}
                         } else {
                             State::Death{level, stage: DeathStage::Particles, start_time: time}
                         }
                     },
                     DeathStage::Particles => {
                         if self.world.cycle_particles(&mut self.led_string, true, 0) {
-                            State::Death{level, stage: DeathStage::Particles, start_time}
+                            State::Death{level, stage, start_time}
                         } else {
                             if level == 0 {
                                 self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
@@ -253,7 +253,7 @@ impl Twang {
                             self.led_string[i].set_rgb([255, 0, 0]);
                         }
                         if time < (start_time + GAMEOVER_SPREAD_DUR) {
-                            State::GameOver{stage: GameOverStage::Spread, start_time}
+                            State::GameOver{stage, start_time}
                         } else {
                             State::GameOver{stage: GameOverStage::Fade, start_time: time}
                         }
@@ -265,7 +265,7 @@ impl Twang {
                             self.led_string[i].set_rgb([brightness, 0, 0]);
                         }
                         if time < (start_time + GAMEOVER_FADE_DUR) {
-                            State::GameOver{stage: GameOverStage::Fade, start_time}
+                            State::GameOver{stage, start_time}
                         } else {
                             self.world.player_set_lives(PLAYER_DEFAULT_LIVES);
                             self.build_level(0, time);
