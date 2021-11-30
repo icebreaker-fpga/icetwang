@@ -35,3 +35,7 @@ set_io -nowarn joy_up    3  # P5
 set_io -nowarn joy_down  9  # P6
 set_io -nowarn joy_left  10 # P7
 set_io -nowarn joy_right 11 # P8
+
+# I2C
+set_io -nowarn i2c_sda   12 # P9
+set_io -nowarn i2c_scl   21 # P10

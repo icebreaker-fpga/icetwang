@@ -328,3 +328,42 @@ _add:
             description: Joystick Right
             bitOffset: 3
             bitWidth: 1
+  I2C:
+    description: I2C
+    groupName: I2C
+    baseAddress: 0x89000000
+    addressBlock:
+      offset: 0x0
+      size:   0x01000000
+      usage: registers
+    registers:
+      DAT:
+        description: Readwrite register
+        addressOffset: 0x0
+        access: read-write
+        resetValue: 0x00000000
+        fields:
+          DATA:
+            description: Write data to send, read received data.
+            bitOffset: 0
+            bitWidth: 8
+          ACK:
+            description: Write ack out, read ack in.
+            bitOffset: 8
+            bitWidth: 1
+          CMD:
+            description: Set command type.
+            bitOffset: 12
+            bitWidth: 2
+          READY:
+            description: I2C peripheral ready
+            bitOffset: 31
+            bitWidth: 1
+
+I2C:
+  DAT:
+    CMD:
+      START: [0, "Start condition"]
+      STOP: [1, "Stop condition"]
+      WRITE: [2, "Write access"]
+      READ: [3, "Read access"]

@@ -455,5 +455,75 @@
         </register>
       </registers>
     </peripheral>
+    <peripheral>
+      <name>I2C</name>
+      <description>I2C</description>
+      <groupName>I2C</groupName>
+      <baseAddress>2298478592</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>16777216</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>DAT</name>
+          <description>Readwrite register</description>
+          <addressOffset>0</addressOffset>
+          <access>read-write</access>
+          <resetValue>0</resetValue>
+          <fields>
+            <field>
+              <name>DATA</name>
+              <description>Write data to send, read received data.</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
+            </field>
+            <field>
+              <name>ACK</name>
+              <description>Write ack out, read ack in.</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>CMD</name>
+              <description>Set command type.</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>2</bitWidth>
+              <enumeratedValues>
+                <name>CMD</name>
+                <usage>read-write</usage>
+                <enumeratedValue>
+                  <name>START</name>
+                  <description>Start condition</description>
+                  <value>0</value>
+                </enumeratedValue>
+                <enumeratedValue>
+                  <name>STOP</name>
+                  <description>Stop condition</description>
+                  <value>1</value>
+                </enumeratedValue>
+                <enumeratedValue>
+                  <name>WRITE</name>
+                  <description>Write access</description>
+                  <value>2</value>
+                </enumeratedValue>
+                <enumeratedValue>
+                  <name>READ</name>
+                  <description>Read access</description>
+                  <value>3</value>
+                </enumeratedValue>
+              </enumeratedValues>
+            </field>
+            <field>
+              <name>READY</name>
+              <description>I2C peripheral ready</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
   </peripherals>
 </device>

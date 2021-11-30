@@ -46,12 +46,16 @@ module top (
 	input  wire joy_left,
 	input  wire joy_right,
 
+	// I2C/Stemma interface
+	inout  wire i2c_sda,
+	inout  wire i2c_scl,
+
 	// Clock
 	input  wire clk_in
 );
 
 	localparam integer SPRAM_AW = 14; /* 14 => 64k, 15 => 128k */
-	localparam integer WB_N  =  9;
+	localparam integer WB_N  =  10;
 
 	localparam integer WB_DW = 32;
 	localparam integer WB_AW = 16;
@@ -253,6 +257,53 @@ module top (
 		.clk      (clk_24m),
 		.rst      (rst)
 	);
+
+	// I2C / Stemma
+	// ------------
+	wire        i2c_scl_oe;
+	wire        i2c_sda_oe;
+	wire        i2c_sda_i;
+
+	i2c_master_wb #(
+		.DW(4)
+	) i2c_I (
+		.scl_oe   (i2c_scl_oe),
+		.sda_oe   (i2c_sda_oe),
+		.sda_i    (i2c_sda_i),
+		//.wb_addr (wb_addr[0]), // only one CSR address
+		.wb_rdata (wb_rdata[9]),
+		.wb_wdata (wb_wdata),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[9]),
+		.wb_ack   (wb_ack[9]),
+		.clk      (clk_24m),
+		.rst      (rst)
+	);
+
+	// IOBs
+    SB_IO #(
+        .PIN_TYPE    (6'b1101_01),
+        .PULLUP      (1'b1),
+        .IO_STANDARD ("SB_LVCMOS")
+    ) i2c_scl_iob (
+        .PACKAGE_PIN   (i2c_scl),
+        .OUTPUT_CLK    (clk_24m),
+        .OUTPUT_ENABLE (i2c_scl_oe),
+        .D_OUT_0       (1'b0)
+    );
+
+    SB_IO #(
+        .PIN_TYPE    (6'b1101_00),
+        .PULLUP      (1'b1),
+        .IO_STANDARD ("SB_LVCMOS")
+    ) i2c_sda_iob (
+        .PACKAGE_PIN   (i2c_sda),
+        .INPUT_CLK     (clk_24m),
+        .OUTPUT_CLK    (clk_24m),
+        .OUTPUT_ENABLE (i2c_sda_oe),
+        .D_OUT_0       (1'b0),
+        .D_IN_0        (i2c_sda_i)
+    );
 
 	// Warm Boot
 	// ---------
