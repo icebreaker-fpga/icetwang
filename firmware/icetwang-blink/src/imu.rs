@@ -22,6 +22,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use core::convert::TryInto;
+
+use embedded_hal::prelude::_embedded_hal_blocking_i2c_WriteRead;
+
 use super::i2c::I2c;
 
 #[derive(Default)]
@@ -38,13 +42,16 @@ pub struct Imu {
 impl Imu {
 
     pub fn read(&mut self, i2c: &mut I2c) {
-        i2c.read_start(0xD2, 0x2D);
-        self.acc_x = i2c.read_continue_16(false);
-        self.acc_y = i2c.read_continue_16(false);
-        self.acc_z = i2c.read_continue_16(false);
-        self.gyro_x = i2c.read_continue_16(false);
-        self.gyro_y = i2c.read_continue_16(false);
-        self.gyro_z = i2c.read_continue_16(false);
-        self.temp = i2c.read_continue_16(true);
+        let mut buffer = [0u8; 14];
+
+        i2c.write_read(0x69, &[0x2D], &mut buffer).unwrap();
+
+        self.acc_x = u16::from_be_bytes(buffer[0..2].try_into().unwrap());
+        self.acc_y = u16::from_be_bytes(buffer[2..4].try_into().unwrap());
+        self.acc_z = u16::from_be_bytes(buffer[4..6].try_into().unwrap());
+        self.gyro_x = u16::from_be_bytes(buffer[6..8].try_into().unwrap());
+        self.gyro_y = u16::from_be_bytes(buffer[8..10].try_into().unwrap());
+        self.gyro_z = u16::from_be_bytes(buffer[10..12].try_into().unwrap());
+        self.temp = u16::from_be_bytes(buffer[12..14].try_into().unwrap());
     }
 }

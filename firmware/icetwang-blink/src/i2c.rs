@@ -22,26 +22,101 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use icetwang_pac::I2C;
 
-use crate::{print, println};
+use icetwang_pac::I2C;
+use embedded_hal::blocking::i2c::{Read, Write, WriteRead, SevenBitAddress};
 
 struct I2cResult {
     ack: bool,
     data: u8,
 }
 
+#[derive(Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum I2CError {
+    /// No ack received
+    Acknowledge,
+}
+
 pub struct I2c {
     registers: I2C,
 }
 
+impl Write<SevenBitAddress> for I2c
+{
+    type Error = I2CError;
+    fn write(&mut self, addr: u8, output: &[u8]) -> Result<(), Self::Error> {
+        self.istart();
+        if self.iwrite(addr << 1) {
+            return Err(I2CError::Acknowledge)
+        }
+        for byte in output {
+            if self.iwrite(*byte) {
+                return Err(I2CError::Acknowledge)
+            }
+        }
+        self.istop();
+        Ok(())
+    }
+}
+
+impl Read<SevenBitAddress> for I2c {
+    type Error = I2CError;
+
+    fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
+        self.istart();
+        if self.iwrite((address << 1) | 1) {
+            return Err(I2CError::Acknowledge)
+        }
+        if buffer.len() > 0 {
+            let blen = buffer.len() - 1;
+            for byte in buffer[0..blen].iter_mut() {
+                *byte = self.iread(false);
+            }
+            buffer[blen] = self.iread(true);
+        }
+        self.istop();
+        Ok(())
+    }
+}
+
+impl WriteRead<SevenBitAddress> for I2c {
+    type Error = I2CError;
+
+    fn write_read(&mut self, address: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<(), Self::Error> {
+        self.istart();
+        if self.iwrite(address << 1) {
+            return Err(I2CError::Acknowledge)
+        }
+        for byte in bytes {
+            if self.iwrite(*byte) {
+                return Err(I2CError::Acknowledge)
+            }
+        }
+        self.istart();
+        if self.iwrite((address << 1) | 1) {
+            return Err(I2CError::Acknowledge)
+        }
+        if buffer.len() > 0 {
+            let blen = buffer.len() - 1;
+            for byte in buffer[0..blen].iter_mut() {
+                *byte = self.iread(false);
+            }
+            buffer[blen] = self.iread(true);
+        }
+        self.istop();
+        Ok(())
+    }
+}
+
 #[allow(dead_code)]
 impl I2c {
+
     pub fn new(registers: I2C) -> Self {
         Self { registers }
     }
 
-    fn wait(&mut self) -> I2cResult {
+    fn iwait(&mut self) -> I2cResult {
         loop {
             let v = self.registers.dat.read();
             if v.ready().bit_is_set() {
@@ -50,69 +125,34 @@ impl I2c {
         }
     }
 
-    fn start(&mut self) {
+    fn istart(&mut self) {
         self.registers.dat.write(|w| w.cmd().start());
-        self.wait();
+        self.iwait();
     }
 
-    fn stop(&mut self) {
+    fn istop(&mut self) {
         self.registers.dat.write(|w| w.cmd().stop());
-        self.wait();
+        self.iwait();
     }
 
-    fn write(&mut self, data: u8) -> bool {
+    fn iwrite(&mut self, data: u8) -> bool {
         self.registers.dat.write(|w| unsafe { w.cmd().write().data().bits(data) });
-        self.wait().ack
+        self.iwait().ack
     }
 
-    fn read(&mut self, ack: bool) -> u8 {
+    fn iread(&mut self, ack: bool) -> u8 {
         self.registers.dat.write(|w| if ack {
             w.cmd().read().ack().set_bit()
         } else {
             w.cmd().read().ack().clear_bit()
         });
-        self.wait().data
+        self.iwait().data
     }
 
-    pub fn write_reg(&mut self, dev: u8, reg: u8, val: u8) {
-        self.start();
-        self.write(dev);
-        self.write(reg);
-        self.write(val);
-        self.stop();
+    pub fn read_reg(&mut self, device: u8, address: u8) -> Result<u8, I2CError> {
+        let mut buf = [0u8; 1];
+        self.write_read(device, &[address], &mut buf)?;
+        Ok(buf[0])
     }
-
-    pub fn read_reg(&mut self, dev: u8, reg: u8) -> u8 {
-        self.start();
-        self.write(dev);
-        self.write(reg);
-        self.start();
-        self.write(dev | 1);
-        let v = self.read(true);
-        self.stop();
-        v
-    }
-
-    pub fn read_start(&mut self, dev: u8, reg: u8) {
-        self.start();
-        self.write(dev);
-        self.write(reg);
-        self.start();
-        self.write(dev | 1);
-    }
-
-    pub fn read_continue_8(&mut self, finish: bool) -> u8 {
-        let v = self.read(finish);
-        if finish {self.stop()}
-        v
-    }
-
-    pub fn read_continue_16(&mut self, finish: bool) -> u16 {
-        let v = (self.read(false) as u16) << 8 |
-                     self.read(finish) as u16;
-        if finish {self.stop()}
-        v
-    }
-
 
 }

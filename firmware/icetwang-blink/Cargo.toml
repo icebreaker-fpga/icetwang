@@ -12,6 +12,9 @@ icetwang-pac = { path = "../icetwang-pac" }
 riscv-rt  = "0.7.0"
 panic-halt = "0.2"
 vcell = "0.1.2"
+embedded-hal = "0.2"
+#embedded-hal = "1.0.0-alpha.6"
+icm20948 = "0.0"
 
 [profile.release]
 # Keep debug information for release builds, for easier debugging.

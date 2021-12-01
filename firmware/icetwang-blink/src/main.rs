@@ -45,6 +45,7 @@ use joy::Joy;
 use imu::Imu;
 
 use crate::i2c::I2c;
+use embedded_hal::blocking::i2c::Write;
 
 //const SYSTEM_CLOCK_FREQUENCY: u32 = 21_000_000;
 
@@ -97,34 +98,34 @@ fn real_main() -> ! {
     // // Start timer
     timer.enable();
 
-    let id = i2c.read_reg(0xD2, 0x00);
+    let id = i2c.read_reg(0x69, 0x00).unwrap();
     if id == 0xEA {
         println!("Success! ID {:#04X}", id);
     } else {
         panic!("Expected device ID 0xEA but got {:#04X}", id);
     }
-    let mut pwr_mgmt1 = i2c.read_reg(0xD2, 0x06);
+    let mut pwr_mgmt1 = i2c.read_reg(0x69, 0x06).unwrap();
     println!("0PWR: {:#04X}", pwr_mgmt1);
     // Reset
-    i2c.write_reg(0xD2, 0x06, pwr_mgmt1 | 0x80);
+    i2c.write(0x69, &[0x06, pwr_mgmt1 | 0x80]).unwrap();
     while !timer.ev_n() {
         //
     }
     timer.ev_rst();
     // Wait  for  Reset to finish
-    while i2c.read_reg(0xD2, 0x06) & 0x80 != 0 {print!(".")}
+    while i2c.read_reg(0x69, 0x06).unwrap() & 0x80 != 0 {print!(".")}
     // Disable sleep
-    pwr_mgmt1 = i2c.read_reg(0xD2, 0x06);
+    pwr_mgmt1 = i2c.read_reg(0x69, 0x06).unwrap();
     println!("1PWR: {:#04X}", pwr_mgmt1);
-    i2c.write_reg(0xD2, 0x06, pwr_mgmt1 & 0xBF);
-    pwr_mgmt1 = i2c.read_reg(0xD2, 0x06);
+    i2c.write(0x69, &[0x06, pwr_mgmt1 & 0xBF]).unwrap();
+    pwr_mgmt1 = i2c.read_reg(0x69, 0x06).unwrap();
     println!("2PWR: {:#04X}", pwr_mgmt1);
 
     let mut imu = Imu::default();
 
     loop {
         imu.read(&mut i2c);
-        println!("\rAXH {:#06X} GXL {:#06X} TMP {:#06X}", imu.acc_x, imu.gyro_x, imu.temp);
+        print!("\rAXH {:#06X} GXL {:#06X} TMP {:#06X}", imu.acc_x, imu.gyro_x, imu.temp);
         while !timer.ev_n() {
             //
         }
