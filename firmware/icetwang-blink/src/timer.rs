@@ -23,9 +23,64 @@
  */
 
 use icetwang_pac::TIMER;
+use embedded_hal::blocking::delay::{DelayMs, DelayUs};
+
+use crate::{print, println};
 
 pub struct Timer {
     registers: TIMER,
+}
+
+impl DelayUs<u32> for Timer {
+    fn delay_us(&mut self, us: u32) {
+        println!("{}", us);
+        self.disable();
+        self.load(us);
+        self.enable_ev();
+        self.enable();
+        while !self.ev_n() {
+            let val = self.value();
+            if val != 0 {
+                println!("{}", self.value());
+            }
+        }
+        println!("wait ev");
+        self.disable();
+        println!("dis");
+        self.ev_rst();
+        println!("ev rst");
+        self.disable_ev();
+    }
+}
+
+impl DelayUs<u16> for Timer {
+    fn delay_us(&mut self, us: u16) {
+        self.delay_us(us as u32);
+    }
+}
+
+impl DelayUs<u8> for Timer {
+    fn delay_us(&mut self, us: u8) {
+        self.delay_us(us as u32);
+    }
+}
+
+impl DelayMs<u32> for Timer {
+    fn delay_ms(&mut self, ms: u32) {
+        self.delay_us(ms * 1_000);
+    }
+}
+
+impl DelayMs<u16> for Timer {
+    fn delay_ms(&mut self, ms: u16) {
+        self.delay_ms(ms as u32);
+    }
+}
+
+impl DelayMs<u8> for Timer {
+    fn delay_ms(&mut self, ms: u8) {
+        self.delay_ms(ms as u32);
+    }
 }
 
 #[allow(dead_code)]
