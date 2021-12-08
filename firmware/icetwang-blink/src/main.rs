@@ -25,7 +25,8 @@
 #![no_std]
 #![no_main]
 
-extern crate panic_halt;
+use core::panic::PanicInfo;
+use core::sync::atomic::{self, Ordering};
 
 use icetwang_pac;
 use ledstr::LEDString;
@@ -168,3 +169,11 @@ fn main() -> ! {
     real_main();
 }
 
+#[inline(never)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("\r\n==> {}", info);
+    loop {
+        atomic::compiler_fence(Ordering::SeqCst);
+    }
+}
