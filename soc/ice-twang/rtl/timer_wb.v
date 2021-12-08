@@ -1,12 +1,14 @@
 /*
- * ledstring.v
+ * timer_wb.v
  *
  * Copyright (C) 2021 Piotr Esden-Tempski <piotr@esden.net>
  * SPDX-License-Identfier: CERN-OHL-P-2.0
  */
 `default_nettype none
 
-module timer_wb (
+module timer_wb #(
+    parameter integer DIV = 22 // divide by 24 (value always -2) (1us timer)
+)(
 
     // Bus interface
     input  wire [1:0] wb_addr,
@@ -115,7 +117,6 @@ module timer_wb (
             endcase
 
     // Signals
-    localparam DIV = 23; // 24MHz clock -> us counter
     localparam DIVN = $clog2(DIV);
     initial begin
         $display("timer_wb:divider width: %d", DIVN);
@@ -152,12 +153,14 @@ module timer_wb (
         if (rst) begin
             counter <= 32'h00000000;
         end else if (ce) begin
-            if (en_strb)
-                counter <= load;
-            else if (counter_zero) begin
-                counter <= reload;
-            end else
-                counter <= counter - 1;
+            if (en) begin
+                if (en_strb)
+                    counter <= load;
+                else if (counter_zero)
+                    counter <= reload;
+                else
+                    counter <= counter - 1;
+            end
         end
     end
 
