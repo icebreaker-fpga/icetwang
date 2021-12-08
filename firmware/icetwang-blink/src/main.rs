@@ -43,10 +43,9 @@ mod imu;
 use timer::Timer;
 use rgbled::RGBLed;
 use joy::Joy;
-use imu::Imu;
 
 use crate::i2c::I2c;
-use embedded_hal::blocking::i2c::Write;
+use icm20948::{ICM20948_CHIP_ADR, ICMI2C};
 
 //const SYSTEM_CLOCK_FREQUENCY: u32 = 21_000_000;
 
@@ -62,11 +61,6 @@ fn real_main() -> ! {
 
     // Configure the timer
     let mut timer = Timer::new(peripherals.TIMER);
-    //let event_time = 16666;
-    let event_time = 16666;
-    timer.load(event_time); // We want the timer ev to trigger every 1/60th of a second
-    timer.reload(event_time);
-    timer.enable_ev();
 
     // Configure the RGBLed
     let mut rgbled = RGBLed::new(peripherals.RGBLED);
@@ -88,80 +82,59 @@ fn real_main() -> ! {
     ledstring.start();
 
     // Configure the Joystick
-    //let mut joy = Joy::new(peripherals.JOY);
+    let mut joy = Joy::new(peripherals.JOY);
 
     // I2C
     let mut i2c = I2c::new(peripherals.I2C);
 
+    let mut icm = ICMI2C::<_, _, ICM20948_CHIP_ADR>::new(&mut i2c).unwrap();
+    icm.init(&mut i2c, &mut timer).unwrap();
+    icm.set_lp_filter(&mut i2c, &mut timer).unwrap();
     // // Print header
-    // println!("\nDir  CPU  us");
+    println!("\n\rDir  XAcc     YAcc     ZAcc     XGyro     YGyro     ZGyro     CPU  us");
 
     // // Start timer
+    let event_time = 16666;
+    timer.reset();
+    timer.set_load(event_time); // We want the timer ev to trigger every 1/60th of a second
+    timer.set_reload(event_time);
+    timer.enable_ev();
     timer.enable();
 
-    let id = i2c.read_reg(0x69, 0x00).unwrap();
-    if id == 0xEA {
-        println!("Success! ID {:#04X}", id);
-    } else {
-        panic!("Expected device ID 0xEA but got {:#04X}", id);
-    }
-    let mut pwr_mgmt1 = i2c.read_reg(0x69, 0x06).unwrap();
-    println!("0PWR: {:#04X}", pwr_mgmt1);
-    // Reset
-    i2c.write(0x69, &[0x06, pwr_mgmt1 | 0x80]).unwrap();
-    while !timer.ev_n() {
-        //
-    }
-    timer.ev_rst();
-    // Wait  for  Reset to finish
-    while i2c.read_reg(0x69, 0x06).unwrap() & 0x80 != 0 {print!(".")}
-    // Disable sleep
-    pwr_mgmt1 = i2c.read_reg(0x69, 0x06).unwrap();
-    println!("1PWR: {:#04X}", pwr_mgmt1);
-    i2c.write(0x69, &[0x06, pwr_mgmt1 & 0xBF]).unwrap();
-    pwr_mgmt1 = i2c.read_reg(0x69, 0x06).unwrap();
-    println!("2PWR: {:#04X}", pwr_mgmt1);
-
-    let mut imu = Imu::default();
-
+    let mut val: u8 = 0xFF;
     loop {
-        imu.read(&mut i2c);
-        print!("\rAXH {:#06X} GXL {:#06X} TMP {:#06X}", imu.acc_x, imu.gyro_x, imu.temp);
-        while !timer.ev_n() {
-            //
+        let joystate = joy.get();
+        print!("\r{}{}{}{}",
+            if joystate.left {"<"} else {" "},
+            if joystate.right {">"} else {" "},
+            if joystate.up {"^"} else {" "},
+            if joystate.down {"v"} else {" "});
+
+        // Read and display IMU data
+        let bits = icm.get_values_accel_gyro(&mut i2c).unwrap();
+        let (xa, ya, za, xg, yg, zg) = icm.scale_raw_accel_gyro(bits);
+        print!(" {:+08.4} {:+08.4} {:+08.4} {:+09.4} {:+09.4} {:+09.4}", xa, ya, za, xg, yg, zg);
+
+        // Make sure the LED string is ready for us
+        while ledstring.bsy_n() {
+            print!("b");
         }
-        timer.ev_rst();
+
+        val = val.wrapping_sub(1);
+        ledstring.write_rgb(0, ledstr::LED::new(val, 0x00, 0x00));
+        ledstring.write_rgb(1, ledstr::LED::new(0x00, 0xFF - val, 0x00));
+        ledstring.write_rgb(2, ledstr::LED::new(0x00, 0x00, val));
+        ledstring.start();
+
+        let time_elapsed = event_time - timer.get_value();
+        let busy_percent = (time_elapsed * 100) / event_time;
+        print!(" {:03}% {}", busy_percent, time_elapsed);
+        // Wait for the timer to expire
+        while !timer.get_ev() {
+            //println!("tmr: {:#010X} {:#06b}", timer.value(), (timer.csr() & 0xFF) as u8);
+        }
+        timer.ev_rst(); // Reset event
     }
-
-    // let mut val: u8 = 0xFF;
-    // loop {
-    //     let joystate = joy.get();
-    //     print!("{}{}{}{}",
-    //         if joystate.left {"<"} else {" "},
-    //         if joystate.right {">"} else {" "},
-    //         if joystate.up {"^"} else {" "},
-    //         if joystate.down {"v"} else {" "});
-
-    //     // Make sure the LED string is ready for us
-    //     while ledstring.bsy_n() {
-    //         print!("b");
-    //     }
-
-    //     val = val.wrapping_sub(1);
-    //     ledstring.write_rgb(0, ledstr::LED::new(val, 0x00, 0x00));
-    //     ledstring.write_rgb(1, ledstr::LED::new(0x00, 0xFF - val, 0x00));
-    //     ledstring.write_rgb(2, ledstr::LED::new(0x00, 0x00, val));
-    //     ledstring.start();
-
-    //     let time_elapsed = event_time - timer.value();
-    //     let busy_percent = (time_elapsed * 100) / event_time;
-    //     print!(" {:03}% {}\r", busy_percent, time_elapsed);
-    //     // Wait for the timer to expire
-    //     while !timer.ev_n() {
-    //         //println!("tmr: {:#010X} {:#06b}", timer.value(), (timer.csr() & 0xFF) as u8);
-    //     }
-    //     timer.ev_rst(); // Reset event
-    // }
 }
 
 #[entry]

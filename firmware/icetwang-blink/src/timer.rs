@@ -25,31 +25,17 @@
 use icetwang_pac::TIMER;
 use embedded_hal::blocking::delay::{DelayMs, DelayUs};
 
-use crate::{print, println};
-
 pub struct Timer {
     registers: TIMER,
 }
 
 impl DelayUs<u32> for Timer {
     fn delay_us(&mut self, us: u32) {
-        println!("{}", us);
-        self.disable();
-        self.load(us);
+        self.reset();
+        self.set_load(us);
         self.enable_ev();
         self.enable();
-        while !self.ev_n() {
-            let val = self.value();
-            if val != 0 {
-                println!("{}", self.value());
-            }
-        }
-        println!("wait ev");
-        self.disable();
-        println!("dis");
-        self.ev_rst();
-        println!("ev rst");
-        self.disable_ev();
+        while !self.get_ev() {}
     }
 }
 
@@ -105,7 +91,7 @@ impl Timer {
         self.registers.csr.modify(|_,w| w.ev_en().clear_bit());
     }
 
-    pub fn ev_n(&mut self) -> bool {
+    pub fn get_ev(&mut self) -> bool {
         self.registers.csr.read().ev().bit_is_set()
     }
 
@@ -113,27 +99,41 @@ impl Timer {
         self.registers.csr.modify(|_,w| w.ev().clear_bit());
     }
 
-    pub fn st_n(&mut self) -> bool {
+    pub fn get_st(&mut self) -> bool {
         self.registers.csr.read().st().bit_is_set()
     }
 
-    pub fn load(&mut self, value: u32) {
+    pub fn set_load(&mut self, value: u32) {
         unsafe {
             self.registers.load.write(|w| w.bits(value));
         }
     }
 
-    pub fn reload(&mut self, value: u32) {
+    pub fn set_reload(&mut self, value: u32) {
         unsafe {
             self.registers.reload.write(|w| w.bits(value));
         }
     }
 
-    pub fn value(&mut self) -> u32 {
+    pub fn get_value(&self) -> u32 {
         self.registers.counter.read().bits()
     }
 
-    pub fn csr(&mut self) -> u32 {
+    pub fn get_csr(&self) -> u32 {
         self.registers.csr.read().bits()
+    }
+
+    pub fn get_load(&self) -> u32 {
+        self.registers.load.read().bits()
+    }
+
+    pub fn get_reload(&self) -> u32 {
+        self.registers.reload.read().bits()
+    }
+
+    pub fn reset(&mut self) {
+        self.registers.csr.reset();
+        self.registers.load.reset();
+        self.registers.reload.reset();
     }
 }
