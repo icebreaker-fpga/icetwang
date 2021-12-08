@@ -24,7 +24,8 @@ PROJ_SIM_SRCS += rtl/top.v
 PROJ_TESTBENCHES := \
 	dfu_helper_tb \
 	top_tb \
-	ledstring_tb
+	ledstring_tb \
+	timer_tb
 PROJ_PREREQ = \
 	$(BUILD_TMP)/boot.hex
 PROJ_TOP_SRC := rtl/top.v
