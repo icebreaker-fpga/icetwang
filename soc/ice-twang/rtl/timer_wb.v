@@ -109,7 +109,7 @@ module timer_wb #(
             wb_rdata <= 32'h00000000;
         else
             casez (wb_addr)
-                2'b00: wb_rdata <= {28'h000000, ev_en, ev, st, en};
+                2'b00: wb_rdata <= {28'h0000000, ev_en, ev, st, en};
                 2'b01: wb_rdata <= load;
                 2'b10: wb_rdata <= reload;
                 2'b11: wb_rdata <= counter;
@@ -143,7 +143,7 @@ module timer_wb #(
         if (rst)
             prev_en <= 1'b0;
         else
-            if (ce)
+            if (ce | ~en)
                 prev_en <= en;
 
     assign en_strb = (~prev_en & en);
