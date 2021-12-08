@@ -115,23 +115,23 @@ module timer_tb;
 		wb_write(5'h00, 32'h00000009); // set CSR - Enable Timer with EV enabled
 
         annotation <= 0;
-        repeat (10) @(posedge clk);
+        repeat (20) @(posedge clk);
 
         annotation <= "rstev";
         wb_write(5'h00, 32'h00000009); // reset CSR
 
-        repeat (10) @(posedge clk);
+        repeat (20) @(posedge clk);
 
         annotation <= "stop";
 		wb_write(5'h00, 32'h00000000); // set CSR - Disable Timer
 
-        repeat (10) @(posedge clk);
+        repeat (20) @(posedge clk);
 
         annotation <= "evtim";
 		wb_write(5'h00, 32'h00000009); // set CSR - Enable Timer with EV enabled
 
         annotation <= 0;
-        repeat (10) @(posedge clk);
+        repeat (20) @(posedge clk);
 
 
     end
@@ -140,7 +140,7 @@ module timer_tb;
     // ---
 
     timer_wb #(
-        .DIV(-1)
+        .DIV(0)
     ) dut_I (
         .wb_addr(wb_addr),
         .wb_rdata(wb_rdata),
