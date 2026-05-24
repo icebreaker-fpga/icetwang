@@ -1,6 +1,0 @@
-*.kicad_prl
-*-backups
-*gerber*
-fp-info-cache
-_autosave*
-bom
